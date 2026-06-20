@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Hệ Thống Quản Lý Lịch Học</title>
+    <title>Hệ Thống Quản Lý Lịch Học & Điểm Danh</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
@@ -16,85 +16,96 @@
         .grid-container { display: grid; grid-template-columns: 1fr; gap: 14px; width: 100%; max-width: 500px; margin: 0 auto; }
         
         .card-A { background: #ffffff; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.05); border-top: 4px solid #3498db; width: 100%; overflow: hidden; }
-        .card-teacher { border-top-color: #e67e22; }
-        .card-assistant { border-top-color: #2ecc71; }
-        
-        .title-A { font-weight: bold; font-size: 1.05em; color: #2c3e50; display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #fff; }
+        .title-A { font-weight: bold; font-size: 1.05em; color: #2c3e50; display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #fff; cursor: pointer; }
         
         .sub-grid-B { display: none; padding: 0 14px 14px 14px; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; border-top: 1px solid #edf2f7; }
-        .card-B { background: #f8f9fa; padding: 12px 5px; border-radius: 6px; font-size: 0.9em; font-weight: 600; color: #495057; text-align: center; border: 1px solid #e9ecef; margin-top: 10px; }
         
+        .card-B { background: #f8f9fa; padding: 12px 5px; border-radius: 6px; font-size: 0.9em; font-weight: 600; color: #495057; text-align: center; border: 1px solid #e9ecef; margin-top: 10px; cursor: pointer; }
+        .card-B.has-class { background: #e3f2fd !important; color: #0d47a1 !important; border-color: #bbdefb !important; }
+        .card-B.has-class::after { content: "• Có lớp"; display: block; font-size: 0.75em; color: #1565c0; font-weight: normal; }
+
         .floor-container-C { display: none; grid-column: span 2; background: #f7fafc; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; margin-top: 6px; width: 100%; }
         .floor-list { display: flex; flex-direction: column; gap: 6px; }
         .floor-item { border: 1px solid #e2e8f0; border-radius: 5px; background: #ffffff; overflow: hidden; }
-        .floor-btn { background: #edf2f7; padding: 10px; font-size: 0.85em; font-weight: 600; display: flex; justify-content: space-between; width: 100%; }
         
-        .class-info { display: none; background: #ffffff; padding: 5px 10px; font-size: 0.8em; border-top: 1px solid #edf2f7; color: #4a5568; }
-        .shift-item { padding: 8px 0; border-bottom: 1px dashed #e2e8f0; line-height: 1.5; }
-        .shift-item:last-child { border-bottom: none; }
-        .shift-time { display: inline-block; background: #ebf8ff; color: #2b6cb0; padding: 2px 6px; border-radius: 4px; font-weight: bold; font-size: 0.9em; margin-bottom: 3px; }
-        .no-class { color: #a0aec0; font-style: italic; padding: 5px 0; }
-        .class-info strong { color: #2d3748; }
+        .floor-btn { background: #edf2f7; padding: 10px; font-size: 0.85em; font-weight: 600; display: flex; justify-content: space-between; width: 100%; cursor: pointer; border: none; text-align: left; }
+        .floor-btn.has-class { background: #e8f5e9 !important; color: #1b5e20 !important; }
         
+        .class-info { display: none; background: #ffffff; padding: 12px; font-size: 0.85em; border-top: 1px solid #edf2f7; color: #4a5568; }
+        
+        /* CẤU TRÚC CHIA 5 DÒNG CỦA CA HỌC */
+        .shift-block { padding: 12px 0; border-bottom: 3px dashed #e2e8f0; }
+        .shift-block:last-child { border-bottom: none; }
+        
+        .info-row-ca { margin-bottom: 8px; }
+        .info-row-lop { font-size: 1.15em; color: #2b6cb0; font-weight: bold; margin-bottom: 6px; }
+        .info-row-gv { font-size: 0.95em; color: #2d3748; margin-bottom: 4px; }
+        .info-row-sdt { font-size: 0.95em; color: #718096; margin-bottom: 12px; }
+        .info-row-ds { width: 100%; }
+
+        .shift-time { display: inline-block; background: #ebf8ff; color: #2b6cb0; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.95em; }
+        .no-class { color: #a0aec0; font-style: italic; display: block; padding: 5px 0; }
+        
+        /* BẢNG ĐIỂM DANH HỌC SINH 3 DÒNG */
+        .student-table { width: 100%; border-collapse: collapse; font-size: 0.95em; margin-top: 5px; }
+        .student-table th { background: #f7fafc; color: #718096; text-align: left; padding: 6px 4px; font-size: 0.8em; border-bottom: 1px solid #e2e8f0; text-transform: uppercase; }
+        .student-table td { padding: 10px 4px; border-bottom: 1px solid #edf2f7; vertical-align: top; }
+        
+        .student-row.row-cp { background-color: #e8f5e9 !important; } 
+        .student-row.row-kp { background-color: #ffebee !important; } 
+        
+        .line-1 { font-weight: bold; font-size: 1.05em; color: #2d3748; margin-bottom: 6px; }
+        .line-2 { margin-bottom: 8px; display: flex; gap: 8px; }
+        .line-3 { display: flex; gap: 6px; }
+        
+        /* Vùng hiển thị SĐT Phụ huynh dưới ô ghi chú */
+        .parent-phone-box { margin-top: 6px; font-size: 0.85em; color: #4a5568; background: #f7fafc; padding: 4px 6px; border-radius: 4px; border-left: 3px solid #cbd5e0; display: inline-block; width: 100%; }
+        .parent-phone-box a { color: #2b6cb0; text-decoration: none; font-weight: bold; }
+
+        .btn-check {
+            display: inline-block; width: 40px; height: 35px; line-height: 33px; text-align: center;
+            border: 1px solid #cbd5e0; border-radius: 6px; font-weight: bold; cursor: pointer;
+            background: #fff; color: #718096; user-select: none; font-size: 1.2em;
+        }
+        .btn-check.kp-active { background: #e53e3e !important; color: white !important; border-color: #e53e3e !important; }
+        .btn-check.cp-active { background: #38a169 !important; color: white !important; border-color: #38a169 !important; }
+        
+        .btn-act { border: none; padding: 5px 10px; border-radius: 4px; font-size: 0.8em; cursor: pointer; font-weight: bold; color: white; }
+        .btn-recover { background: #4a5568; } 
+        .btn-leave { background: #dd6b20; } 
+        
+        .input-note { width: 100%; padding: 8px; border: 1px solid #cbd5e0; border-radius: 4px; font-size: 0.9em; color: #4a5568; min-height: 40px; resize: none; }
         .active-grid { display: grid !important; }
         .active-block { display: block !important; }
-        
-        .info-list { font-size: 0.85em; color: #4a5568; padding: 14px; width: 100%; }
-        .info-item { padding: 8px 0; border-bottom: 1px solid #f1f5f9; }
-        .info-item:last-child { border: none; }
     </style>
 </head>
 <body>
 
-    <h2>HỆ THỐNG QUẢN LÝ LỊCH HỌC CHUYÊN NGHIỆP</h2>
-
+    <h2>HỆ THỐNG QUẢN LÝ LỊCH HỌC & ĐIỂM DANH</h2>
     <div class="grid-container" id="main-grid"></div>
 
     <script>
         // =================================================================
-        // KHU VỰC NHẬP DỮ LIỆU THỜI KHÓA BIỂU (Đã mở sẵn toàn bộ khung các ngày)
-        // Quy tắc mã: "Thứ_Nhà_Tầng_Ca"
-        // Ca 1 = 18h00, Ca 2 = 18h45, Ca 3 = 20h00
+        // VÙNG 1: TỔNG KHO DỮ LIỆU HỌC SINH (ĐÃ THÊM SĐT PHỤ HUYNH)
         // =================================================================
-        const dataThoikhoabieu = {
-             //2-30-1-1 là Thứ _ Nhà _ Tầng _ Ca học.
-            // ----- THỨ 2 (Mã bắt đầu bằng số 2) -----
-            "2_30_1_1": { lop: "Toán 10 Cơ Bản", gv: "Thầy Hùng", sdt: "0901.234.567" },
-            "2_30_1_2": { lop: "Văn 11 Nâng Cao", gv: "Cô Linh", sdt: "0909.888.999" },
-            "2_30_1_3": { lop: "Anh Giao Tiếp", gv: "Thầy John", sdt: "0912.333.444" },
-
-            // ----- THỨ 3 (Mã bắt đầu bằng số 3) -----
-            "3_30_1_1": { lop: "Lớp Lý Khối 10", gv: "Thầy Sơn", sdt: "0988.555.666" },
-            "3_30_1_2": { lop: "Trống lịch", gv: "---", sdt: "---" },
-            "3_30_1_3": { lop: "Trống lịch", gv: "---", sdt: "---" },
-
-            // ----- THỨ 4 (Mã bắt đầu bằng số 4) -----
-            "4_30_1_1": { lop: "Hóa Học 11", gv: "Thầy Minh", sdt: "0977.111.222" },
-            "4_30_1_2": { lop: "Trống lịch", gv: "---", sdt: "---" },
-            "4_30_1_3": { lop: "Trống lịch", gv: "---", sdt: "---" },
-
-            // ----- THỨ 5 (Mã bắt đầu bằng số 5) -----
-            "5_30_1_1": { lop: "Sinh Học 12", gv: "Cô An", sdt: "0911.222.333" },
-            "5_30_1_2": { lop: "Trống lịch", gv: "---", sdt: "---" },
-            "5_30_1_3": { lop: "Trống lịch", gv: "---", sdt: "---" },
-
-            // ----- THỨ 6 (Mã bắt đầu bằng số 6) -----
-            "6_30_1_1": { lop: "Trống lịch", gv: "---", sdt: "---" },
-            "6_30_1_2": { lop: "Trống lịch", gv: "---", sdt: "---" },
-            "6_30_1_3": { lop: "Trống lịch", gv: "---", sdt: "---" },
-
-            // ----- THỨ 7 (Mã bắt đầu bằng số 7) -----
-            "7_30_1_1": { lop: "Trống lịch", gv: "---", sdt: "---" },
-            "7_30_1_2": { lop: "Trống lịch", gv: "---", sdt: "---" },
-            "7_30_1_3": { lop: "Trống lịch", gv: "---", sdt: "---" },
-
-            // ----- CHỦ NHẬT (Mã bắt đầu bằng số 8) -----
-            "8_30_1_1": { lop: "Toán Ôn Đại Học", gv: "Thầy Đức", sdt: "0966.777.888" },
-            "8_30_1_2": { lop: "Trống lịch", gv: "---", sdt: "---" },
-            "8_30_1_3": { lop: "Trống lịch", gv: "---", sdt: "---" },
+        const DATA_HOC_SINH_GOC = {
+            "hs1": { name: "Nguyễn Văn Anh", phonePH: "0912.111.222" },
+            "hs2": { name: "Trần Thị Bình", phonePH: "0912.333.444" },
+            "hs3": { name: "Lê Hoàng Chiến", phonePH: "0912.555.666" },
+            "hs4": { name: "Phạm Minh Đức", phonePH: "0912.777.888" },
+            "hs5": { name: "Hoàng Thu Giang", phonePH: "0912.999.000" }
         };
 
-        // Cấu hình số tầng cố định của các nhà
+        const DANH_SACH_LOP_HOC = {
+            "Sun": ["hs1", "hs2", "hs3"], 
+            "Star": ["hs4", "hs5"]
+        };
+
+        const dataThoikhoabieu = {
+            "2_30_1_1": { tenLop: "Sun", gv: "Thầy Hùng", sdt: "0901.234.567" },
+            "2_58_3_2": { tenLop: "Star", gv: "Cô Linh", sdt: "0909.888.999" }
+        };
+
         const configData = [
             { id: 30, floors: 3 },
             { id: 58, floors: 3 },
@@ -105,17 +116,92 @@
         const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
         const mainGrid = document.getElementById('main-grid');
 
-        function getClassInfo(dayNum, houseId, floorNum, shiftNum) {
-            const key = `${dayNum}_${houseId}_${floorNum}_${shiftNum}`;
-            if (dataThoikhoabieu[key]) {
-                return `📝 <strong>Lớp:</strong> ${dataThoikhoabieu[key].lop}<br>
-                        👨‍🏫 <strong>GV:</strong> ${dataThoikhoabieu[key].gv}<br>
-                        📞 <strong>SĐT:</strong> ${dataThoikhoabieu[key].sdt}`;
+        function checkHasClass(dayNum, houseId, floorNum = null) {
+            if (floorNum !== null) {
+                for (let c = 1; c <= 3; c++) {
+                    if (dataThoikhoabieu[`${dayNum}_${houseId}_${floorNum}_${c}`]) return true;
+                }
+            } else {
+                for (let f = 1; f <= 7; f++) {
+                    for (let c = 1; c <= 3; c++) {
+                        if (dataThoikhoabieu[`${dayNum}_${houseId}_${f}_${c}`]) return true;
+                    }
+                }
             }
-            return `<span class="no-class">❌ Trống lịch / Chưa xếp lớp</span>`;
+            return false;
         }
 
-        // Tự động dựng toàn bộ khung cấu trúc từ Thứ 2 đến Chủ Nhật giống hệt nhau
+        function generateShiftHTML(dayNum, houseId, floorNum, shiftNum, shiftText) {
+            const key = `${dayNum}_${houseId}_${floorNum}_${shiftNum}`;
+            const classData = dataThoikhoabieu[key];
+            
+            if (!classData) {
+                return `
+                    <div class="shift-block">
+                        <div class="info-row-ca"><span class="shift-time">${shiftText}</span></div>
+                        <div class="info-row-ds"><span class="no-class">❌ Trống lịch / Chưa xếp lớp</span></div>
+                    </div>
+                `;
+            }
+
+            let studentTableHTML = `
+                <table class="student-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 55%;">Học sinh (3 dòng)</th>
+                            <th style="width: 45%;">Ghi chú & Liên hệ</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            const studentIds = DANH_SACH_LOP_HOC[classData.tenLop] || [];
+            studentIds.forEach((hsId) => {
+                const studentInfo = DATA_HOC_SINH_GOC[hsId];
+                if (studentInfo) {
+                    const uniqueStorageKey = `${key}_${hsId}`;
+                    const phPhone = studentInfo.phonePH || "Chưa cập nhật";
+
+                    studentTableHTML += `
+                        <tr class="student-row" data-storagekey="${uniqueStorageKey}">
+                            <td>
+                                <div class="line-1">${studentInfo.name}</div>
+                                <div class="line-2">
+                                    <span class="btn-check btn-cp" onclick="toggleAttendance(this, 'cp')">✓</span>
+                                    <span class="btn-check btn-kp" onclick="toggleAttendance(this, 'kp')">X</span>
+                                </div>
+                                <div class="line-3">
+                                    <button class="btn-act btn-recover" onclick="handleAction(this, 'recover')">🔄 Học tiếp</button>
+                                    <button class="btn-act btn-leave" onclick="handleAction(this, 'leave')">📅 Đã xin nghỉ</button>
+                                </div>
+                            </td>
+                            <td>
+                                <textarea class="input-note" placeholder="Lý do nghỉ hoặc ghi chú..." oninput="saveNoteToStorage(this)"></textarea>
+                                <div class="parent-phone-box">
+                                    📞 PH: <a href="tel:${phPhone.replace(/\./g, '')}">${phPhone}</a>
+                                </div>
+                            </td>
+                        </tr>
+                    `;
+                }
+            });
+            studentTableHTML += `</tbody></table>`;
+
+            return `
+                <div class="shift-block">
+                    <div class="info-row-ca"><span class="shift-time">${shiftText}</span></div>
+                    <div class="info-row-lop">🏫 Lớp: ${classData.tenLop}</div>
+                    <div class="info-row-gv">👨‍🏫 <strong>Giáo viên:</strong> ${classData.gv}</div>
+                    <div class="info-row-sdt">📞 <strong>Số điện thoại:</strong> ${classData.sdt}</div>
+                    <div class="info-row-ds">
+                        <div style="font-weight:bold; margin-bottom:6px; color:#2c3e50; font-size:0.95em;">👥 Danh sách học sinh lớp ${classData.tenLop}:</div>
+                        ${studentTableHTML}
+                    </div>
+                </div>
+            `;
+        }
+
+        // Tự động dựng giao diện tuần
         days.forEach((day, index) => {
             const dayIdx = index + 1; 
             const dayNum = index + 2; 
@@ -127,7 +213,8 @@
             `;
 
             configData.forEach(house => {
-                dayHtml += `<div class="card-B" data-target="t${dayIdx}-b${house.id}">Nhà ${house.id}</div>`;
+                const houseClass = checkHasClass(dayNum, house.id) ? "card-B has-class" : "card-B";
+                dayHtml += `<div class="${houseClass}" data-target="t${dayIdx}-b${house.id}">Nhà ${house.id}</div>`;
             });
 
             configData.forEach(house => {
@@ -136,24 +223,16 @@
                         <div class="floor-list">
                 `;
                 for (let f = 1; f <= house.floors; f++) {
+                    const floorClass = checkHasClass(dayNum, house.id, f) ? "floor-btn has-class" : "floor-btn";
                     dayHtml += `
                         <div class="floor-item">
-                            <div class="floor-btn" data-target="info-${dayIdx}-${house.id}-${f}">
+                            <button class="${floorClass}" data-target="info-${dayIdx}-${house.id}-${f}">
                                 🏢 Tầng ${f} <span>▸</span>
-                            </div>
+                            </button>
                             <div class="class-info" id="info-${dayIdx}-${house.id}-${f}">
-                                <div class="shift-item">
-                                    <span class="shift-time">⏰ Ca 18h00</span><br>
-                                    ${getClassInfo(dayNum, house.id, f, 1)}
-                                </div>
-                                <div class="shift-item">
-                                    <span class="shift-time">⏰ Ca 18h45</span><br>
-                                    ${getClassInfo(dayNum, house.id, f, 2)}
-                                </div>
-                                <div class="shift-item">
-                                    <span class="shift-time">⏰ Ca 20h00</span><br>
-                                    ${getClassInfo(dayNum, house.id, f, 3)}
-                                </div>
+                                ${generateShiftHTML(dayNum, house.id, f, 1, "⏰ Ca 18h00")}
+                                ${generateShiftHTML(dayNum, house.id, f, 2, "⏰ Ca 18h45")}
+                                ${generateShiftHTML(dayNum, house.id, f, 3, "⏰ Ca 20h00")}
                             </div>
                         </div>
                     `;
@@ -165,28 +244,112 @@
             mainGrid.innerHTML += dayHtml;
         });
 
-        // Tạo 2 khối A8 và A9 cố định ở cuối danh sách
-        mainGrid.innerHTML += `
-            <div class="card-A card-teacher">
-                <div class="title-A">👨‍🏫 Ô A8: Danh Sách Giáo Viên Tổng Hợp</div>
-                <div class="info-list">
-                    <div class="info-item"><strong>Thầy Hùng</strong> - SĐT: 0901.234.567</div>
-                    <div class="info-item"><strong>Cô Linh</strong> - SĐT: 0909.888.999</div>
-                </div>
-            </div>
-            <div class="card-A card-assistant">
-                <div class="title-A">助 Ô A9: Danh Sách Trợ Giảng Tổng Hợp</div>
-                <div class="info-list">
-                    <div class="info-item"><strong>Trợ Giảng D</strong> - SĐT: 0988.111.222</div>
-                </div>
-            </div>
-        `;
+        // ================= LOCALSTORAGE LOGIC =================
 
-        // Hệ thống bắt sự kiện click độc lập cho mobile
+        function saveAttendanceState(row, status, noteText) {
+            const sKey = row.getAttribute('data-storagekey');
+            const dataObj = { status: status, note: noteText };
+            localStorage.setItem(sKey, JSON.stringify(dataObj));
+        }
+
+        function saveNoteToStorage(textarea) {
+            const row = textarea.closest('.student-row');
+            let currentStatus = "";
+            if (row.classList.contains('row-cp')) currentStatus = "cp";
+            if (row.classList.contains('row-kp')) currentStatus = "kp";
+            
+            saveAttendanceState(row, currentStatus, textarea.value);
+        }
+
+        function loadDataFromStorage() {
+            document.querySelectorAll('.student-row').forEach(row => {
+                const sKey = row.getAttribute('data-storagekey');
+                const savedData = localStorage.getItem(sKey);
+
+                if (savedData) {
+                    const parsed = JSON.parse(savedData);
+                    const cpBtn = row.querySelector('.btn-cp');
+                    const kpBtn = row.querySelector('.btn-kp');
+                    const noteInput = row.querySelector('.input-note');
+
+                    noteInput.value = parsed.note || "";
+
+                    if (parsed.status === 'cp') {
+                        row.className = "student-row row-cp";
+                        cpBtn.classList.add('cp-active');
+                    } else if (parsed.status === 'kp') {
+                        row.className = "student-row row-kp";
+                        kpBtn.classList.add('kp-active');
+                    }
+                }
+            });
+        }
+
+        // ================= HÀNH VI ĐIỀU CHỈNH ĐIỂM DANH =================
+
+        function toggleAttendance(element, type) {
+            const row = element.closest('.student-row');
+            const cpBtn = row.querySelector('.btn-cp');
+            const kpBtn = row.querySelector('.btn-kp');
+            const noteInput = row.querySelector('.input-note');
+
+            let finalStatus = "";
+
+            if (type === 'cp') { 
+                kpBtn.classList.remove('kp-active');
+                const isActive = element.classList.toggle('cp-active');
+                
+                if (isActive) {
+                    row.className = "student-row row-cp";
+                    noteInput.value = "Nghỉ có phép";
+                    finalStatus = "cp";
+                } else {
+                    row.className = "student-row";
+                    noteInput.value = "";
+                }
+            } else if (type === 'kp') { 
+                cpBtn.classList.remove('cp-active');
+                const isActive = element.classList.toggle('kp-active');
+                
+                if (isActive) {
+                    row.className = "student-row row-kp";
+                    noteInput.value = "Vắng không phép";
+                    finalStatus = "kp";
+                } else {
+                    row.className = "student-row";
+                    noteInput.value = "";
+                }
+            }
+            saveAttendanceState(row, finalStatus, noteInput.value);
+        }
+
+        function handleAction(btn, type) {
+            const row = btn.closest('.student-row');
+            const cpBtn = row.querySelector('.btn-cp');
+            const kpBtn = row.querySelector('.btn-kp');
+            const noteInput = row.querySelector('.input-note');
+
+            if (type === 'recover') { 
+                row.className = "student-row";
+                cpBtn.classList.remove('cp-active');
+                kpBtn.classList.remove('kp-active');
+                noteInput.value = "";
+                saveAttendanceState(row, "", "");
+            } else if (type === 'leave') { 
+                row.className = "student-row row-cp";
+                cpBtn.classList.add('cp-active');
+                kpBtn.classList.remove('kp-active');
+                noteInput.value = "Đã xin nghỉ dài ngày";
+                saveAttendanceState(row, "cp", noteInput.value);
+            }
+        }
+
+        loadDataFromStorage();
+
+        // ================= CONTROL ĐIỀU HƯỚNG MENU MOBILE =================
         document.querySelectorAll('.title-A').forEach(title => {
             title.addEventListener('click', function() {
                 const targetId = this.getAttribute('data-target');
-                if(!targetId) return; 
                 const targetEl = document.getElementById(targetId);
                 if(targetEl) {
                     const isOpen = targetEl.classList.contains('active-grid');
