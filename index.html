@@ -15,9 +15,17 @@
         h2 { text-align: center; color: #2c3e50; margin: 15px 0 20px 0; font-size: 1.25em; width: 100%; max-width: 500px; line-height: 1.4; }
         .grid-container { display: grid; grid-template-columns: 1fr; gap: 14px; width: 100%; max-width: 500px; margin: 0 auto; }
         
-        .card-A { background: #ffffff; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.05); border-top: 4px solid #3498db; width: 100%; overflow: hidden; }
+        .card-A { background: #ffffff; border-radius: 10px; box-shadow: 0 3px 6px rgba(0,0,0,0.05); border-top: 4px solid #3498db; width: 100%; overflow: hidden; margin-bottom: 2px; }
         .title-A { font-weight: bold; font-size: 1.05em; color: #2c3e50; display: flex; justify-content: space-between; align-items: center; padding: 14px; background: #fff; cursor: pointer; }
         
+        /* Đổi màu viền riêng cho ô giáo viên để dễ phân biệt */
+        .card-teacher { border-top: 4px solid #9b59b6; }
+        .teacher-info-box { display: none; padding: 14px; background: #fff; border-top: 1px solid #edf2f7; }
+        .teacher-table { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+        .teacher-table th { background: #f7fafc; color: #718096; text-align: left; padding: 8px; border-bottom: 2px solid #e2e8f0; font-size: 0.85em; text-transform: uppercase; }
+        .teacher-table td { padding: 10px 8px; border-bottom: 1px solid #edf2f7; color: #4a5568; }
+        .teacher-table td a { color: #2b6cb0; text-decoration: none; font-weight: bold; }
+
         .sub-grid-B { display: none; padding: 0 14px 14px 14px; grid-template-columns: repeat(2, 1fr); gap: 10px; width: 100%; border-top: 1px solid #edf2f7; }
         
         .card-B { background: #f8f9fa; padding: 12px 5px; border-radius: 6px; font-size: 0.9em; font-weight: 600; color: #495057; text-align: center; border: 1px solid #e9ecef; margin-top: 10px; cursor: pointer; }
@@ -44,7 +52,6 @@
 
         .shift-time { display: inline-block; background: #ebf8ff; color: #2b6cb0; padding: 4px 10px; border-radius: 4px; font-weight: bold; font-size: 0.95em; }
         
-        /* NÚT COPY RIÊNG CHO TỪNG CA */
         .btn-shift-copy {
             background-color: #2ecc71; color: white; border: none; padding: 5px 10px;
             font-size: 0.8em; font-weight: bold; border-radius: 5px; cursor: pointer;
@@ -87,10 +94,35 @@
 <body>
 
     <h2>HỆ THỐNG QUẢN LÝ LỊCH HỌC & ĐIỂM DANH</h2>
-    <div class="grid-container" id="main-grid"></div>
+    <div class="grid-container" id="main-grid">
+        
+        <div class="card-A card-teacher">
+            <div class="title-A" id="btn-toggle-teacher">👨‍🏫 Danh Sách Giáo Viên <span>▼</span></div>
+            <div class="teacher-info-box" id="teacher-box">
+                <table class="teacher-table">
+                    <thead>
+                        <tr>
+                            <th>Họ và Tên</th>
+                            <th>Ngày Sinh</th>
+                            <th>Số Điện Thoại</th>
+                        </tr>
+                    </thead>
+                    <tbody id="teacher-list-data">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
 
     <script>
-        // ================= KHO DỮ LIỆU MẪU =================
+        // ================= KHO DỮ LIỆU GIÁO VIÊN MỚI THÊM =================
+        const DATA_GIAO_VIEN = [
+            { name: "Thầy Hùng", dob: "15/08/1992", phone: "0901.234.567" },
+            { name: "Cô Linh", dob: "22/11/1995", phone: "0909.888.999" }
+        ];
+
+        // ================= KHO DỮ LIỆU MẪU HỌC SINH & LỚP =================
         const DATA_HOC_SINH_GOC = {
             "hs1": { name: "Nguyễn Văn Anh", phonePH: "0912.111.222" },
             "hs2": { name: "Trần Thị Bình", phonePH: "0912.333.444" },
@@ -114,6 +146,18 @@
 
         const days = ["Thứ 2", "Thứ 3", "Thứ 4", "Thứ 5", "Thứ 6", "Thứ 7", "Chủ Nhật"];
         const mainGrid = document.getElementById('main-grid');
+
+        // Render dữ liệu giáo viên vào bảng công khai
+        const tbodyTeacher = document.getElementById('teacher-list-data');
+        DATA_GIAO_VIEN.forEach(gv => {
+            tbodyTeacher.innerHTML += `
+                <tr>
+                    <td><strong>${gv.name}</strong></td>
+                    <td>${gv.dob}</td>
+                    <td><a href="tel:${gv.phone.replace(/\./g, '')}">${gv.phone}</a></td>
+                </tr>
+            `;
+        });
 
         function checkHasClass(dayNum, houseId, floorNum = null) {
             if (floorNum !== null) {
@@ -160,7 +204,7 @@
                 if (studentInfo) {
                     const uniqueStorageKey = `${key}_${hsId}`;
                     const phPhone = studentInfo.phonePH || "Chưa cập nhật";
-                    const stt = index + 1; // Tạo số thứ tự từ 1
+                    const stt = index + 1;
 
                     studentTableHTML += `
                         <tr class="student-row" data-storagekey="${uniqueStorageKey}" data-stt="${stt}" data-name="${studentInfo.name}">
@@ -378,10 +422,8 @@
                 }
             });
 
-            // Tính sĩ số động: Tổng số - số học sinh vắng
             const currentAttendance = totalStudents - absentCount;
 
-           // Xây dựng chuỗi nội dung copy
             let reportText = `📋 BÁO CÁO CHI TIẾT CA HỌC\n`;
             reportText += `⏰ Ca học: ${shiftTime}\n`;
             reportText += `🏫 Lớp: ${tenLop}\n`;
@@ -396,7 +438,6 @@
                 reportText += absentListText;
             }
 
-            // Tiến hành copy vào Clipboard
             const tempTextarea = document.createElement('textarea');
             tempTextarea.value = reportText;
             document.body.appendChild(tempTextarea);
@@ -409,8 +450,18 @@
 
         loadDataFromStorage();
 
+        // Tải hiệu ứng đóng/mở riêng cho ô Giáo Viên
+        document.getElementById('btn-toggle-teacher').addEventListener('click', function() {
+            const box = document.getElementById('teacher-box');
+            if(box.style.display === "block") {
+                box.style.display = "none";
+            } else {
+                box.style.display = "block";
+            }
+        });
+
         // ================= CONTROL ĐIỀU HƯỚNG MENU MOBILE =================
-        document.querySelectorAll('.title-A').forEach(title => {
+        document.querySelectorAll('.title-A:not(#btn-toggle-teacher)').forEach(title => {
             title.addEventListener('click', function() {
                 const targetId = this.getAttribute('data-target');
                 const targetEl = document.getElementById(targetId);
