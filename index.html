@@ -1,3 +1,13 @@
+📂 Mở File
+🔄 Reset
+↩ Undo
+↪ Redo
+⌨️ Phím nhanh
+HTML
+CSS
+JS
+💾 LƯU FILE
+CHẠY ▶
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -168,11 +178,11 @@
             { name: "Bạn Lan", dob: "12/09/2004", phone: "0987.654.321" }
         ];
 
-        // ================= KHO DỮ LIỆU HỌC SINH (Gắn thêm idLop cố định) =================
+        // ================= KHO DỮ LIỆU HỌC SINH (Gắn thêm thu cố định) =================
         const DANH_SACH_LOP_HOC = [
             {
-                idLop: "ly12a2", // <-- Đặt 1 ID cố định, viết liền không dấu cho lớp này
-                tenLop: "Can", // <-- BẬY GIỜ BẠN THAY ĐỔI TÊN NÀY TÙY Ý, TKB TỰ ĐỒNG BỘ THEO
+                thu: "ly12a2", // <-- Đặt 1 ID cố định, viết liền không dấu cho lớp này
+                tenLop: "Canr", // <-- BẬY GIỜ BẠN THAY ĐỔI TÊN NÀY TÙY Ý, TKB TỰ ĐỒNG BỘ THEO
                 hocSinh: [
                     { ten: "Lê Văn C", lop: "12A2", sdt: "0903333333", hocPhi: "600.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] },
                     { ten: "Phạm Thị D", lop: "12A2", sdt: "0904444444", hocPhi: "600.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] }
@@ -180,9 +190,9 @@
             }
         ];
 
-        // ================= THỜI KHÓA BIỂU (Liên kết qua idLop thay vì Tên Lớp) =================
+        // ================= THỜI KHÓA BIỂU (Liên kết qua thu thay vì Tên Lớp) =================
         const dataThoikhoabieu = {
-            "2_30_1_1": { idLop: "ly12a2", gv: "Thầy Hùng", sdt: "0901.234.567" } // Gắn idLop ở đây
+            "2_30_1_1": { thu: "ly12a2", gv: "Thầy Hùng", sdt: "0901.234.567" } // Gắn thu ở đây
         };
 
         const configData = [
@@ -235,15 +245,15 @@
                 `;
             }
 
-            // Tìm thông tin lớp học thực tế dựa trên idLop trong TKB
-            const lopTarget = DANH_SACH_LOP_HOC.find(l => l.idLop === tkbInfo.idLop);
+            // Tìm thông tin lớp học thực tế dựa trên thu trong TKB
+            const lopTarget = DANH_SACH_LOP_HOC.find(l => l.thu === tkbInfo.thu);
             
-            // Nếu không tìm thấy cấu trúc lớp tương ứng với idLop đó
+            // Nếu không tìm thấy cấu trúc lớp tương ứng với thu đó
             if(!lopTarget) {
                 return `
                     <div class="shift-block">
                         <div class="info-row-ca"><span class="shift-time">${shiftText}</span></div>
-                        <div class="info-row-ds"><span class="no-class">⚠️ Lỗi: Không tìm thấy ID lớp "${tkbInfo.idLop}"</span></div>
+                        <div class="info-row-ds"><span class="no-class">⚠️ Lỗi: Không tìm thấy ID lớp "${tkbInfo.thu}"</span></div>
                     </div>
                 `;
             }
@@ -585,3 +595,4 @@
     </script>
 </body>
 </html>
+
