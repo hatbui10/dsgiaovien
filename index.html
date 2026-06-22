@@ -71,8 +71,71 @@
         .line-2 { margin-bottom: 8px; display: flex; gap: 8px; }
         .line-3 { display: flex; gap: 6px; }
         
-        .parent-phone-box { margin-top: 6px; font-size: 0.85em; color: #4a5568; background: #f7fafc; padding: 4px 6px; border-radius: 4px; border-left: 3px solid #cbd5e0; display: inline-block; width: 100%; }
+        .parent-phone-box { margin-top: 6px; font-size: 0.85em; color: #4a5568; background: #f7fafc; padding: 6px; border-radius: 4px; border-left: 3px solid #cbd5e0; display: flex; justify-content: space-between; align-items: center; width: 100%; }
         .parent-phone-box a { color: #2b6cb0; text-decoration: none; font-weight: bold; }
+
+        /* Nút gọi nhanh cho học sinh */
+        .btn-student-call {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #2e7d32;
+            color: white !important;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            text-decoration: none !important;
+            font-weight: bold;
+            gap: 4px;
+            transition: background-color 0.2s;
+        }
+        .btn-student-call:active {
+            background-color: #1b5e20;
+        }
+        
+        /* Khi học sinh đã xin nghỉ phép trước -> Nút gọi sẽ mờ đi */
+        .btn-student-call.call-muted {
+            opacity: 0.35;
+            background-color: #718096;
+            pointer-events: none; /* Không cho bấm */
+            cursor: not-allowed;
+        }
+
+        /* Khung hiển thị danh sách vắng kèm số điện thoại */
+        .absent-display-box {
+            background: #fff5f5;
+            border: 1px solid #fed7d7;
+            border-radius: 6px;
+            padding: 10px;
+            margin-bottom: 12px;
+        }
+        .absent-title {
+            font-weight: bold;
+            color: #c53030;
+            margin-bottom: 6px;
+            font-size: 0.9em;
+        }
+        .absent-list {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .absent-item {
+            background: #ffffff;
+            border: 1px solid #feb2b2;
+            padding: 6px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .absent-item-info {
+            color: #2d3748;
+        }
+        .absent-item-info strong {
+            color: #9b2c2c;
+        }
 
         .btn-check {
             display: inline-block; width: 40px; height: 35px; line-height: 33px; text-align: center;
@@ -91,9 +154,8 @@
         .active-block { display: block !important; }
 
         /* Màu cho trợ giảng */
-.card-assistant { border-top: 4px solid #e67e22 !important; }
+        .card-assistant { border-top: 4px solid #e67e22 !important; }
         
-    
     </style>
 </head>
 <body>
@@ -119,22 +181,22 @@
         </div>
 
         <!-- Khối Trợ Giảng -->
-<div class="card-A card-assistant">
-    <div class="title-A" id="btn-toggle-assistant" style="border-top-color: #e67e22;">👩‍ assistants Trợ Giảng <span>▼</span></div>
-    <div class="teacher-info-box" id="assistant-box">
-        <table class="teacher-table">
-            <thead>
-                <tr>
-                    <th>Họ và Tên</th>
-                    <th>Ngày Sinh</th>
-                    <th>Số Điện Thoại</th>
-                </tr>
-            </thead>
-            <tbody id="assistant-list-data">
-            </tbody>
-        </table>
-    </div>
-</div>
+        <div class="card-A card-assistant">
+            <div class="title-A" id="btn-toggle-assistant" style="border-top-color: #e67e22;">👩‍ assistants Trợ Giảng <span>▼</span></div>
+            <div class="teacher-info-box" id="assistant-box">
+                <table class="teacher-table">
+                    <thead>
+                        <tr>
+                            <th>Họ và Tên</th>
+                            <th>Ngày Sinh</th>
+                            <th>Số Điện Thoại</th>
+                        </tr>
+                    </thead>
+                    <tbody id="assistant-list-data">
+                    </tbody>
+                </table>
+            </div>
+        </div>
         
 
     </div>
@@ -147,10 +209,10 @@
         ];
 
         // ================= KHO DỮ LIỆU TRỢ GIẢNG =================
-const DATA_TRO_GIANG = [
-    { name: "Bạn Minh", dob: "05/02/2003", phone: "0912.345.678" },
-    { name: "Bạn Lan", dob: "12/09/2004", phone: "0987.654.321" }
-];
+        const DATA_TRO_GIANG = [
+            { name: "Bạn Minh", dob: "05/02/2003", phone: "0912.345.678" },
+            { name: "Bạn Lan", dob: "12/09/2004", phone: "0987.654.321" }
+        ];
 
 
         
@@ -193,16 +255,16 @@ const DATA_TRO_GIANG = [
         });
 
         // Render dữ liệu trợ giảng
-const tbodyAssistant = document.getElementById('assistant-list-data');
-DATA_TRO_GIANG.forEach(tg => {
-    tbodyAssistant.innerHTML += `
-        <tr>
-            <td><strong>${tg.name}</strong></td>
-            <td>${tg.dob}</td>
-            <td><a href="tel:${tg.phone.replace(/\./g, '')}">${tg.phone}</a></td>
-        </tr>
-    `;
-});
+        const tbodyAssistant = document.getElementById('assistant-list-data');
+        DATA_TRO_GIANG.forEach(tg => {
+            tbodyAssistant.innerHTML += `
+                <tr>
+                    <td><strong>${tg.name}</strong></td>
+                    <td>${tg.dob}</td>
+                    <td><a href="tel:${tg.phone.replace(/\./g, '')}">${tg.phone}</a></td>
+                </tr>
+            `;
+        });
 
 
 
@@ -251,10 +313,11 @@ DATA_TRO_GIANG.forEach(tg => {
                 if (studentInfo) {
                     const uniqueStorageKey = `${key}_${hsId}`;
                     const phPhone = studentInfo.phonePH || "Chưa cập nhật";
+                    const cleanPhone = phPhone.replace(/\./g, '');
                     const stt = index + 1;
 
                     studentTableHTML += `
-                        <tr class="student-row" data-storagekey="${uniqueStorageKey}" data-stt="${stt}" data-name="${studentInfo.name}">
+                        <tr class="student-row" data-storagekey="${uniqueStorageKey}" data-stt="${stt}" data-name="${studentInfo.name}" data-phone="${phPhone}">
                             <td>
                                 <div class="line-1">${stt}. ${studentInfo.name}</div>
                                 <div class="line-2">
@@ -269,7 +332,11 @@ DATA_TRO_GIANG.forEach(tg => {
                             <td>
                                 <textarea class="input-note" placeholder="Lý do nghỉ hoặc ghi chú..." oninput="saveNoteToStorage(this)"></textarea>
                                 <div class="parent-phone-box">
-                                    📞 PH: <a href="tel:${phPhone.replace(/\./g, '')}">${phPhone}</a>
+                                    <div>📞 PH: <br><a href="tel:${cleanPhone}">${phPhone}</a></div>
+                                    ${phPhone !== "Chưa cập nhật" ? `
+                                    <a href="tel:${cleanPhone}" class="btn-student-call">
+                                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M21 16.42v3.536a1 1 0 0 1-.93.998c-.437.03-.794-.211-1.16-.42-2.433-1.39-4.63-3.155-6.52-5.228-1.892-2.075-3.415-4.469-4.52-7.052-.257-.6-.441-1.127-.27-1.745A1 1 0 0 1 8.582 5h3.536a1 1 0 0 1 .929.632l.96 2.24a1 1 0 0 1-.219 1.09l-1.44 1.44a13.3 13.3 0 0 0 4.43 4.43l1.44-1.44a1 1 0 0 1 1.09-.219l2.24.96a1 1 0 0 1 .632.929z"/></svg>Gọi
+                                    </a>` : ''}
                                 </div>
                             </td>
                         </tr>
@@ -288,6 +355,15 @@ DATA_TRO_GIANG.forEach(tg => {
                     <div class="info-row-lop">👥 Sĩ số: </div>
                     <div class="info-row-gv">👨‍🏫 <strong>Giáo viên:</strong> ${classData.gv}</div>
                     <div class="info-row-sdt">📞 <strong>Số điện thoại:</strong> ${classData.sdt}</div>
+                    
+                    <!-- Khung hiển thị danh sách học sinh vắng trong ca kèm SĐT -->
+                    <div class="absent-display-box">
+                        <div class="absent-title">❌ Học sinh vắng ca này:</div>
+                        <div class="absent-list" id="absent-list-${key}">
+                            <span style="color:#a0aec0; font-style:italic; font-size:0.9em;">Trống (Lớp đi học đầy đủ)</span>
+                        </div>
+                    </div>
+
                     <div class="info-row-ds">
                         <div style="font-weight:bold; margin-bottom:6px; color:#2c3e50; font-size:0.95em;">👥 Danh sách học sinh:</div>
                         ${studentTableHTML}
@@ -339,12 +415,70 @@ DATA_TRO_GIANG.forEach(tg => {
             mainGrid.innerHTML += dayHtml;
         });
 
+        // ================= HÀM ĐỘNG: CẬP NHẬT KHUNG HIỂN THỊ VẮNG & TRẠNG THÁI NÚT GỌI =================
+        function updateAbsentDisplayAndCallBtn(row) {
+            const block = row.closest('.shift-block');
+            if (!block) return;
+            const shiftKey = block.getAttribute('data-key');
+            const absentListContainer = document.getElementById(`absent-list-${shiftKey}`);
+            if (!absentListContainer) return;
+
+            const callBtn = row.querySelector('.btn-student-call');
+            
+            // Xác định trạng thái vắng hiện tại của dòng này
+            let isMuted = false;
+            if (row.classList.contains('row-cp')) {
+                isMuted = true; // Nghỉ có phép / Đã xin nghỉ thì nút gọi mờ đi
+            }
+
+            // Cập nhật giao diện nút gọi tại chỗ của thẻ học sinh đó
+            if (callBtn) {
+                if (isMuted) {
+                    callBtn.classList.add('call-muted');
+                } else {
+                    callBtn.classList.remove('call-muted');
+                }
+            }
+
+            // Quét lại toàn bộ các học sinh vắng trong Block (Ca) này để hiển thị lên Khung Vắng
+            const allRowsInShift = block.querySelectorAll('.student-row');
+            let absentHTML = "";
+
+            allRowsInShift.forEach(r => {
+                if (r.classList.contains('row-cp') || r.classList.contains('row-kp')) {
+                    const name = r.getAttribute('data-name');
+                    const phone = r.getAttribute('data-phone');
+                    const cleanPhone = phone.replace(/\./g, '');
+                    const typeLabel = r.classList.contains('row-cp') ? "Có phép" : "Không phép";
+                    const itemMuteClass = r.classList.contains('row-cp') ? "call-muted" : "";
+
+                    absentHTML += `
+                        <div class="absent-item">
+                            <div class="absent-item-info">🔹 <strong>${name}</strong> (${typeLabel})</div>
+                            ${phone !== "Chưa cập nhật" ? `
+                            <a href="tel:${cleanPhone}" class="btn-student-call ${itemMuteClass}">
+                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="12" height="12" fill="currentColor"><path d="M21 16.42v3.536a1 1 0 0 1-.93.998c-.437.03-.794-.211-1.16-.42-2.433-1.39-4.63-3.155-6.52-5.228-1.892-2.075-3.415-4.469-4.52-7.052-.257-.6-.441-1.127-.27-1.745A1 1 0 0 1 8.582 5h3.536a1 1 0 0 1 .929.632l.96 2.24a1 1 0 0 1-.219 1.09l-1.44 1.44a13.3 13.3 0 0 0 4.43 4.43l1.44-1.44a1 1 0 0 1 1.09-.219l2.24.96a1 1 0 0 1 .632.929z"/></svg> Gọi PH: ${phone}
+                            </a>` : ''}
+                        </div>
+                    `;
+                }
+            });
+
+            if (absentHTML === "") {
+                absentListContainer.innerHTML = `<span style="color:#a0aec0; font-style:italic; font-size:0.9em;">Trống (Lớp đi học đầy đủ)</span>`;
+            } else {
+                absentListContainer.innerHTML = absentHTML;
+            }
+        }
+
+
         // ================= LOCALSTORAGE LOGIC =================
 
         function saveAttendanceState(row, status, noteText) {
             const sKey = row.getAttribute('data-storagekey');
             const dataObj = { status: status, note: noteText };
             localStorage.setItem(sKey, JSON.stringify(dataObj));
+            updateAbsentDisplayAndCallBtn(row);
         }
 
         function saveNoteToStorage(textarea) {
@@ -377,6 +511,8 @@ DATA_TRO_GIANG.forEach(tg => {
                         kpBtn.classList.add('kp-active');
                     }
                 }
+                // Chạy cập nhật danh sách hiển thị ban đầu ngay sau khi load bộ nhớ
+                updateAbsentDisplayAndCallBtn(row);
             });
         }
 
@@ -509,10 +645,11 @@ DATA_TRO_GIANG.forEach(tg => {
         });
 
         // Tải hiệu ứng đóng/mở cho ô Trợ Giảng (ĐÃ BỔ SUNG)
-document.getElementById('btn-toggle-assistant').addEventListener('click', function() {
-    const box = document.getElementById('assistant-box');
-    box.style.display = (box.style.display === "block") ? "none" : "block";
-});
+        document.getElementById('btn-toggle-assistant').addEventListener('click', function() {
+            const box = document.getElementById('assistant-box');
+            box.style.display = (box.style.display === "block") ? "none" : "block";
+        });
+        
         // ================= CONTROL ĐIỀU HƯỚNG MENU MOBILE =================
         document.querySelectorAll('.title-A:not(#btn-toggle-teacher)').forEach(title => {
             title.addEventListener('click', function() {
