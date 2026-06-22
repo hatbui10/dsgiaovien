@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -172,18 +171,21 @@
         // ================= KHO DỮ LIỆU HỌC SINH (Gắn thêm thu cố định) =================
         const DANH_SACH_LOP_HOC = [
             {
-                thu: "ly12a2", // <-- Đặt 1 ID cố định, viết liền không dấu cho lớp này
-                tenLop: "Canr", // <-- BẬY GIỜ BẠN THAY ĐỔI TÊN NÀY TÙY Ý, TKB TỰ ĐỒNG BỘ THEO
+                tenLop: "CAN",
+                thu: "Thứ 2",
                 hocSinh: [
-                    { ten: "Lê Văn C", lop: "12A2", sdt: "0903333333", hocPhi: "600.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] },
-                    { ten: "Phạm Thị D", lop: "12A2", sdt: "0904444444", hocPhi: "600.000", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] }
+                    { ten: "Nguyễn Khánh Linh (Chíp)", lop: "Lớp 3", sdt: "093 450 3450", hocPhi: "0", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] },
+                    { ten: "Yên Nhật Anh Thư", lop: "Lớp 3", sdt: "094 472 4668", hocPhi: "0", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] },
+                    { ten: "Nguyễn Cầm Giang", lop: "Lớp 3", sdt: "094 444 8556", hocPhi: "0", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] },
+                    { ten: "Tô Minh Ngọc", lop: "Lớp 3", sdt: "091 214 5662", hocPhi: "0", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] },
+                    { ten: "Nguyễn Nghiêm Hoàng Hải", lop: "Lớp 3", sdt: "091 693 1661", hocPhi: "0", ghiChu: "", isXinNghi: false, isDiHocTiep: false, timeXinNghi: null, buoiVangData: [] }
                 ]
             }
         ];
 
         // ================= THỜI KHÓA BIỂU (Liên kết qua thu thay vì Tên Lớp) =================
         const dataThoikhoabieu = {
-            "2_30_1_1": { thu: "ly12a2", gv: "Thầy Hùng", sdt: "0901.234.567" } // Gắn thu ở đây
+            "2_30_1_1": { thu: "Thứ 2", gv: "Thầy Hùng", sdt: "0901.234.567" } // Gắn thu ở đây
         };
 
         const configData = [
@@ -273,7 +275,7 @@
                     <tr class="student-row" data-storagekey="${uniqueStorageKey}" data-stt="${stt}" data-name="${student.ten}" data-phone="${phPhone}">
                         <td>
                             <div class="line-1">${stt}. ${student.ten}</div>
-                            <div class="line-sub">Trường: ${student.lop || 'K/N'} | HP: ${student.hocPhi || '0'}</div>
+                            <div class="line-sub">Lớp: ${student.lop || 'K/N'} | HP: ${student.hocPhi || '0'}</div>
                             <div class="line-2">
                                 <span class="btn-check btn-cp" onclick="toggleAttendance(this, 'cp')">✓</span>
                                 <span class="btn-check btn-kp" onclick="toggleAttendance(this, 'kp')">X</span>
@@ -305,7 +307,8 @@
                         <button class="btn-shift-copy" onclick="copySingleShiftReport('${key}')">📋 Copy báo cáo</button>
                     </div>
                     <div class="info-row-lop">🏫 Lớp: ${tenLopHienTai}</div>
-                    <div class="info-row-lop">👥 Sĩ số: ${studentsList.length} học sinh</div>
+                    <div class="info-row-lop" id="siso-display-${key}">👥 Sĩ số: ${studentsList.length}/${studentsList.length}</div>
+                    <div class="info-row-lop" id="vang-display-${key}" style="font-size: 1em; color: #e53e3e; font-weight: normal; margin-top: -4px;">❌ Vắng: 0</div>
                     <div class="info-row-gv">👨‍🏫 <strong>Giáo viên:</strong> ${tkbInfo.gv}</div>
                     <div class="info-row-sdt">📞 <strong>Số điện thoại:</strong> ${tkbInfo.sdt}</div>
                     
@@ -385,9 +388,11 @@
 
             const allRowsInShift = block.querySelectorAll('.student-row');
             let absentHTML = "";
+            let absentCount = 0;
 
             allRowsInShift.forEach(r => {
                 if (r.classList.contains('row-cp') || r.classList.contains('row-kp')) {
+                    absentCount++;
                     const name = r.getAttribute('data-name');
                     const phone = r.getAttribute('data-phone');
                     const cleanPhone = phone.replace(/\./g, '');
@@ -405,6 +410,16 @@
                     `;
                 }
             });
+
+            // Cập nhật text Sĩ số (ví dụ: 4/5) và Số lượng vắng động ra giao diện
+            const sisoEl = document.getElementById(`siso-display-${shiftKey}`);
+            const vangEl = document.getElementById(`vang-display-${shiftKey}`);
+            if(sisoEl) {
+                sisoEl.innerHTML = `👥 Sĩ số: ${allRowsInShift.length - absentCount}/${allRowsInShift.length}`;
+            }
+            if(vangEl) {
+                vangEl.innerHTML = `❌ Vắng: ${absentCount}`;
+            }
 
             absentListContainer.innerHTML = absentHTML || `<span style="color:#a0aec0; font-style:italic; font-size:0.9em;">Trống (Lớp đi học đầy đủ)</span>`;
         }
@@ -525,7 +540,7 @@
                 }
             });
 
-            let reportText = `📋 BÁO CÁO CHI TIẾT CA HỌC\n⏰ Ca học: ${shiftTime}\n🏫 Lớp: ${tenLop}\n👨‍🏫 Giáo viên: ${gv}\n👥 Sĩ số: ${rows.length - absentCount}/${rows.length}\n-----------------------------\n❌ DANH SÁCH HỌC SINH VẮNG:\n`;
+            let reportText = `📋 BÁO CÁO CHI TIẾT CA HỌC\n⏰ Ca học: ${shiftTime}\n🏫 Lớp: ${tenLop}\n👨‍🏫 Giáo viên: ${gv}\n👥 Sĩ số: ${rows.length - absentCount}/${rows.length}\n❌ Vắng: ${absentCount}\n-----------------------------\n❌ DANH SÁCH HỌC SINH VẮNG:\n`;
             reportText += absentCount === 0 ? `🎉 Không có học sinh vắng (Đi học đầy đủ).\n` : absentListText;
 
             const tempTextarea = document.createElement('textarea');
@@ -586,4 +601,3 @@
     </script>
 </body>
 </html>
-
