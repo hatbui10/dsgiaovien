@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="vi">
 <head>
@@ -52,7 +53,7 @@
             box-shadow: 0 0 15px rgba(0, 240, 255, 0.15);
         }
 
-        /* --- Khu vực thêm học sinh mới (Tách dòng) --- */
+        /* --- Khu vực thêm học sinh mới --- */
         .add-student-box {
             background: #0d0d1a;
             border: 1px solid #ffd700;
@@ -61,14 +62,14 @@
             margin-bottom: 15px;
             display: flex;
             flex-direction: column;
-            gap: 10px; /* Khoảng cách giữa các dòng */
+            gap: 10px;
         }
         .add-student-box input {
             width: 100%;
             background: #050508;
             border: 1px solid #333;
             color: #fff;
-            padding: 12px 10px; /* Ô nhập cao hơn để dễ bấm trên điện thoại */
+            padding: 12px 10px;
             font-size: 0.9rem;
             border-radius: 4px;
             outline: none;
@@ -87,7 +88,6 @@
             border-radius: 4px;
             cursor: pointer;
             text-transform: uppercase;
-            margin-top: 2px;
         }
         .btn-add:active { background: #cca300; }
 
@@ -158,7 +158,7 @@
             background: #081a10;
         }
 
-        /* Hàng trên: Họ tên + SĐT + Nút Gọi */
+        /* Hàng trên: Họ tên + SĐT + Nút Gọi & Nút Xóa */
         .student-info-row {
             display: flex;
             justify-content: space-between;
@@ -171,6 +171,7 @@
             display: flex;
             flex-direction: column;
             gap: 2px;
+            flex: 1;
         }
         .student-name {
             font-weight: bold;
@@ -181,7 +182,35 @@
             font-size: 0.8rem;
             color: #888;
         }
+        .student-actions-right {
+            display: flex;
+            gap: 5px;
+        }
         
+        .btn-call { 
+            background: #ffd700; 
+            color: #000; 
+            padding: 8px 12px;
+            font-size: 0.9rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            box-shadow: 0 0 5px #ffd700;
+        }
+        .btn-delete {
+            background: #4a0000;
+            color: #ff3333;
+            border: 1px solid #ff3333;
+            padding: 8px 10px;
+            font-size: 0.9rem;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        .btn-delete:active {
+            background: #ff3333;
+            color: #fff;
+        }
+
         /* Hàng dưới: Đi học + Vắng + Ghi chú */
         .student-controls-row {
             display: flex;
@@ -206,17 +235,6 @@
         
         .btn-present { background: #003311; color: #00ff66; border: 1px solid #00ff66; }
         .btn-present.active { background: #00ff66; color: #000; box-shadow: 0 0 10px #00ff66; }
-
-        .btn-call { 
-            background: #ffd700; 
-            color: #000; 
-            padding: 6px 12px;
-            font-size: 0.95rem;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            box-shadow: 0 0 5px #ffd700;
-        }
 
         .note-select {
             flex: 1.5;
@@ -259,7 +277,6 @@
     </div>
 
     <script>
-        // Danh sách gốc (Dùng làm dữ liệu ban đầu)
         const defaultStudents = [
             { id: 1, name: "Nguyễn Văn An", phone: "0901234501", status: "present", note: "" },
             { id: 2, name: "Trần Thị Bình", phone: "0901234502", status: "present", note: "" },
@@ -321,7 +338,6 @@
             document.getElementById('classStats').innerText = `Sĩ số: ${total} | Có mặt: ${presentCount} | Vắng: ${absentCount}`;
         }
 
-        // Thêm học sinh mới
         function addNewStudent() {
             const nameInput = document.getElementById('newStudentName');
             const phoneInput = document.getElementById('newStudentPhone');
@@ -355,6 +371,25 @@
             updateStats();
         }
 
+        // TÍNH NĂNG XÓA HỌC SINH
+        function deleteStudent(studentId, studentName) {
+            const confirmDelete = confirm(`Bạn có chắc chắn muốn XÓA học sinh "${studentName}" ra khỏi lớp?`);
+            if (confirmDelete) {
+                // Lọc bỏ học sinh được chọn
+                myClass.students = myClass.students.filter(s => s.id !== studentId);
+                
+                // Cập nhật lại số thứ tự hiển thị (STT) dựa trên danh sách mới
+                myClass.students.forEach((s, index) => {
+                    s.id = index + 1;
+                });
+
+                saveData(); // Lưu lại vào localStorage
+                renderStudentList();
+                renderAbsentList();
+                updateStats();
+            }
+        }
+
         function renderStudentList() {
             const container = document.getElementById('studentList');
             container.innerHTML = '';
@@ -372,7 +407,10 @@
                             <span class="student-name">${student.id}. ${student.name}</span>
                             <span class="student-phone">SĐT: ${student.phone}</span>
                         </div>
-                        <button class="btn-call" onclick="callStudent('${student.phone}')">📞 Gọi</button>
+                        <div class="student-actions-right">
+                            <button class="btn-call" onclick="callStudent('${student.phone}')">📞</button>
+                            <button class="btn-delete" onclick="deleteStudent(${student.id}, '${student.name}')">🗑️</button>
+                        </div>
                     </div>
                     
                     <div class="student-controls-row">
@@ -433,10 +471,11 @@
             const absentCount = absentStudents.length;
             const presentCount = total - absentCount;
 
-            let copyText = `${myClass.name}\n`;
+            let copyText = `BÁO CÁO ĐIỂM DANH: ${myClass.name}\n`;
             copyText += `Sĩ số: ${total} (Có mặt: ${presentCount} | Vắng: ${absentCount})\n`;
             copyText += `-------------------------\n`;
-            
+            copyText += `Danh sách học sinh vắng mặt:\n`;
+
             if (absentCount === 0) {
                 copyText += "- Không có học sinh vắng (Lớp đủ).";
             } else {
