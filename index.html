@@ -20,7 +20,7 @@
             width: 100%;
             max-width: 500px; /* Độ rộng tối ưu cho màn hình điện thoại */
             margin: 0 auto;
-            background: #1e1e24; /* Nền container sáng hơn một chút để tạo khối chiều sâu */
+            background: #1e1e24; /* Nền container tạo khối chiều sâu */
             padding: 16px;
             border-radius: 16px;
             box-shadow: 0 8px 24px rgba(0,0,0,0.4);
@@ -28,80 +28,63 @@
         h2 {
             text-align: center;
             color: #ffffff;
-            margin-top: 8px;
-            margin-bottom: 20px;
+            margin: 8px 0 20px 0;
             font-size: 1.3em;
             text-transform: uppercase;
             letter-spacing: 0.5px;
         }
+
+        /* 📱 THANH TIÊU ĐỀ BẤM ĐỂ ĐÓNG/MỞ (ACCORDION HEADER) */
+        .accordion-header {
+            background-color: #262631;
+            color: #3498db;
+            padding: 14px 16px;
+            margin-top: 12px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            border-left: 4px solid #3498db;
+            transition: background-color 0.2s;
+        }
+        /* Đổi màu sắc thanh bấm cho từng nhóm để dễ phân biệt */
+        .header-chinh {
+            color: #1abc9c;
+            border-left-color: #1abc9c;
+        }
+        .header-phan-nhom {
+            color: #9b59b6;
+            border-left-color: #9b59b6;
+        }
+        .header-tro-giang {
+            color: #e67e22;
+            border-left-color: #e67e22;
+        }
         
-        /* 📱 THANH ĐIỀU HƯỚNG TAB LỚN (GIÁO VIÊN / TRỢ GIẢNG) */
-        .tab-navigation {
-            display: flex;
-            background: #262631;
-            padding: 4px;
-            border-radius: 30px;
-            margin-bottom: 16px;
-        }
-        .tab-btn {
-            flex: 1;
-            padding: 12px 6px;
-            font-size: 0.85em;
-            font-weight: bold;
-            color: #94a3b8;
-            background: transparent;
-            border: none;
-            border-radius: 25px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
-        }
-        .tab-btn.active[data-tab="giao-vien"] {
-            background-color: #3498db;
-            color: #ffffff;
-        }
-        .tab-btn.active[data-tab="tro-giang"] {
-            background-color: #e67e22;
-            color: #ffffff;
-        }
-
-        /* 👥 THANH ĐIỀU HƯỚNG TAB CON BÊN TRONG TAB GIÁO VIÊN */
-        .sub-tab-navigation {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 16px;
-            padding: 0 4px;
-        }
-        .sub-tab-btn {
-            flex: 1;
-            padding: 8px 4px;
+        /* Hiệu ứng mũi tên xoay khi đóng/mở */
+        .accordion-icon {
+            transition: transform 0.2s ease;
             font-size: 0.8em;
-            font-weight: bold;
-            color: #94a3b8;
-            background: #262631;
-            border: 1px solid #3f3f52;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            text-align: center;
         }
-        /* Style khi các tab con được chọn */
-        .sub-tab-btn.active[data-subtab="gv-chinh"] {
-            background-color: #1abc9c;
-            border-color: #1abc9c;
-            color: #ffffff;
+        .accordion-header.active .accordion-icon {
+            transform: rotate(180deg);
         }
-        .sub-tab-btn.active[data-subtab="gv-phan-nhom"] {
-            background-color: #9b59b6;
-            border-color: #9b59b6;
-            color: #ffffff;
+        .accordion-header:active {
+            background-color: #2d2d3a;
         }
 
-        /* ẨN / HIỆN LOGIC KHỐI */
-        .tab-content, .sub-tab-content {
+        /* KHỐI NỘI DUNG ẨN MẶC ĐỊNH */
+        .accordion-content {
             display: none;
+            margin-top: 10px;
+            margin-bottom: 14px;
         }
-        .tab-content.active, .sub-tab-content.active {
+        /* Class kích hoạt hiển thị */
+        .accordion-content.open {
             display: block;
         }
 
@@ -109,26 +92,15 @@
         .card-list {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
         }
         .user-card {
             background: #262631;
             border-radius: 12px;
             padding: 14px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
-            border-left: 4px solid #3498db;
+            border-left: 3px solid #555566;
         }
-        /* Đổi màu thanh chỉ thị bên cạnh thẻ dựa theo từng nhóm */
-        .sub-tab-content[id="gv-chinh"] .user-card {
-            border-left-color: #1abc9c;
-        }
-        .sub-tab-content[id="gv-phan-nhom"] .user-card {
-            border-left-color: #9b59b6;
-        }
-        .tab-content[id="tro-giang"] .user-card {
-            border-left-color: #e67e22;
-        }
-
         .card-header {
             display: flex;
             justify-content: space-between;
@@ -136,7 +108,7 @@
             margin-bottom: 8px;
         }
         .user-name {
-            font-size: 1.1em;
+            font-size: 1.05em;
             font-weight: bold;
             color: #ffffff;
         }
@@ -148,17 +120,17 @@
             font-size: 0.75em;
             font-weight: 600;
         }
-        .tab-content[id="tro-giang"] .badge-lop {
+        .header-tro-giang + .accordion-content .badge-lop {
             background-color: #e67e22;
         }
         .user-time {
-            font-size: 0.85em;
+            font-size: 0.82em;
             color: #94a3b8;
-            margin-bottom: 14px;
+            margin-bottom: 12px;
             line-height: 1.4;
         }
         
-        /* KHU VỰC NÚT ĐIỀU HƯỚNG */
+        /* KHU VỰC NÚT ĐIỀU HƯỚNG LIÊN HỆ */
         .contact-actions {
             display: flex;
             gap: 8px;
@@ -185,7 +157,7 @@
             background-color: #0068ff;
         }
         .btn-action:active {
-            opacity: 0.7; /* Tạo hiệu ứng phản hồi nhấn nút mượt mà khi chạm trên màn hình cảm ứng */
+            opacity: 0.7;
         }
     </style>
 </head>
@@ -194,33 +166,30 @@
 <div class="container">
     <h2>Quản Lý Nhân Sự</h2>
     
-    <!-- Tab Điều Hướng Lớn -->
-    <div class="tab-navigation">
-        <button class="tab-btn active" data-tab="giao-vien">👨‍🏫 GIÁO VIÊN</button>
-        <button class="tab-btn" data-tab="tro-giang">🧑‍🎓 TRỢ GIẢNG</button>
+    <!-- THANH BẤM 1: GIÁO VIÊN CHÍNH -->
+    <div class="accordion-header header-chinh" onclick="toggleAccordion('gv-chinh-content', this)">
+        <span>⭐ GIÁO VIÊN CHÍNH</span>
+        <span class="accordion-icon">▼</span>
+    </div>
+    <div id="gv-chinh-content" class="accordion-content">
+        <div id="gv-chinh-cards" class="card-list"></div>
     </div>
 
-    <!-- KHU VỰC TAB GIÁO VIÊN -->
-    <div id="giao-vien" class="tab-content active">
-        <!-- 2 Tab Con Phân Loại Giáo Viên -->
-        <div class="sub-tab-navigation">
-            <button class="sub-tab-btn active" data-subtab="gv-chinh">⭐ GIÁO VIÊN CHÍNH</button>
-            <button class="sub-tab-btn" data-subtab="gv-phan-nhom">👥 PHÂN NHÓM</button>
-        </div>
-
-        <!-- Nội dung Giáo Viên Chính -->
-        <div id="gv-chinh" class="sub-tab-content active">
-            <div id="gv-chinh-cards" class="card-list"></div>
-        </div>
-
-        <!-- Nội dung Giáo Viên Phân Nhóm -->
-        <div id="gv-phan-nhom" class="sub-tab-content">
-            <div id="gv-phan-nhom-cards" class="card-list"></div>
-        </div>
+    <!-- THANH BẤM 2: PHÂN NHÓM -->
+    <div class="accordion-header header-phan-nhom" onclick="toggleAccordion('gv-phan-nhom-content', this)">
+        <span>👥 GIÁO VIÊN PHÂN NHÓM</span>
+        <span class="accordion-icon">▼</span>
+    </div>
+    <div id="gv-phan-nhom-content" class="accordion-content">
+        <div id="gv-phan-nhom-cards" class="card-list"></div>
     </div>
 
-    <!-- KHU VỰC TAB TRỢ GIẢNG -->
-    <div id="tro-giang" class="tab-content">
+    <!-- THANH BẤM 3: TRỢ GIẢNG -->
+    <div class="accordion-header header-tro-giang" onclick="toggleAccordion('tro-giang-content', this)">
+        <span>🧑‍🎓 DANH SÁCH TRỢ GIẢNG</span>
+        <span class="accordion-icon">▼</span>
+    </div>
+    <div id="tro-giang-content" class="accordion-content">
         <div id="tro-giang-cards" class="card-list"></div>
     </div>
 </div>
@@ -288,46 +257,27 @@
         });
     }
 
-    // Xử lý chuyển đổi Tab Lớn (Giáo Viên / Trợ Giảng)
-    function setupTabSwitching() {
-        const buttons = document.querySelectorAll('.tab-btn');
-        const contents = document.querySelectorAll('.tab-content');
-
-        buttons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                buttons.forEach(b => b.classList.remove('active'));
-                contents.forEach(c => c.classList.remove('active'));
-
-                btn.classList.add('active');
-                const targetTabId = btn.getAttribute('data-tab');
-                document.getElementById(targetTabId).classList.add('active');
-            });
-        });
-    }
-
-    // Xử lý chuyển đổi Tab Con bên trong Giáo Viên (Chính / Phân Nhóm)
-    function setupSubTabSwitching() {
-        const subButtons = document.querySelectorAll('.sub-tab-btn');
-        const subContents = document.querySelectorAll('.sub-tab-content');
-
-        subButtons.forEach(btn => {
-            btn.addEventListener('click', () => {
-                subButtons.forEach(b => b.classList.remove('active'));
-                subContents.forEach(c => c.classList.remove('active'));
-
-                btn.classList.add('active');
-                const targetSubTabId = btn.getAttribute('data-subtab');
-                document.getElementById(targetSubTabId).classList.add('active');
-            });
-        });
+    // 🛠️ LOGIC ĐÓNG / MỞ KHỐI THÔNG MINH (TOGGLE ACCORDION)
+    function toggleAccordion(contentId, headerElement) {
+        const content = document.getElementById(contentId);
+        
+        // Kiểm tra xem tab này hiện tại đang mở không
+        const isOpen = content.classList.contains('open');
+        
+        // Thêm hoặc xóa class tùy thuộc vào trạng thái bấm (Bấm lần 1 mở, lần 2 đóng)
+        if (isOpen) {
+            content.classList.remove('open');
+            headerElement.classList.remove('active');
+        } else {
+            content.classList.add('open');
+            headerElement.classList.add('active');
+        }
     }
 
     window.onload = function() {
         renderCardList(danhSachGvChinh, "gv-chinh-cards");
         renderCardList(danhSachGvPhanNhom, "gv-phan-nhom-cards");
         renderCardList(danhSachTroGiang, "tro-giang-cards");
-        setupTabSwitching();
-        setupSubTabSwitching();
     };
 </script>
 
