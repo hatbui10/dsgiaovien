@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Quản Lý Nhân Sự Giảng Dạy</title>
+    <title>Danh sách giáo viên</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * {
@@ -84,7 +84,7 @@
         .upload-btn-wrapper input[type=file] {
             font-size: 100px;
             position: absolute;
-            left: 0;
+left: 0;
             top: 0;
             opacity: 0;
             width: 100%;
@@ -101,7 +101,7 @@
         .accordion-header {
             background-color: #262631;
             color: #3498db;
-            padding: 10px 12px; /* Thu nhỏ thanh tiêu đề */
+            padding: 10px 12px;
             margin-top: 8px;
             border-radius: 8px;
             cursor: pointer;
@@ -143,12 +143,12 @@
         .card-list {
             display: flex;
             flex-direction: column;
-            gap: 8px; /* Giảm khoảng cách giữa các thẻ */
+            gap: 8px;
         }
         .user-card {
             background: #262631;
             border-radius: 10px;
-            padding: 10px; /* Thu nhỏ tối đa padding của thẻ */
+            padding: 10px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.15);
             border-left: 3px solid #555566;
         }
@@ -192,26 +192,26 @@
         }
         .session-row {
             background: #1e1e24;
-            padding: 5px 8px; /* Thu hẹp tối đa đệm ô lịch */
+            padding: 5px 8px;
             border-radius: 6px;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            font-size: 0.78em; /* Hạ nhẹ cỡ chữ để đảm bảo ôm trọn lịch dài trên cùng 1 dòng */
+            font-size: 0.78em;
         }
         .session-title {
             font-weight: bold;
             color: #94a3b8;
-            min-width: 42px; /* Ép không gian tiêu đề nhỏ lại */
+            min-width: 42px;
             white-space: nowrap;
         }
         .session-info {
             flex: 1;
             text-align: right;
             color: #e2e8f0;
-            white-space: nowrap; /* Cấm chữ tự động xuống dòng */
+            white-space: nowrap;
             overflow: hidden;
-            text-overflow: ellipsis; /* Nếu quá dài sẽ hiển thị dấu ... thay vì phá hỏng layout */
+            text-overflow: ellipsis;
             padding-left: 6px;
         }
 
@@ -228,7 +228,7 @@
             justify-content: center;
             gap: 4px;
             color: white;
-            padding: 8px 0; /* Thu nhỏ nút liên hệ */
+            padding: 8px 0;
             text-decoration: none;
             border-radius: 6px;
             font-weight: bold;
@@ -252,7 +252,6 @@
 <div class="container">
     <h2>Quản Lý Nhân Sự</h2>
     
-    <!-- 📂 THANH THAO TÁC FILE ĐÃ QUAY TRỞ LẠI -->
     <div class="action-section">
         <div class="btn-group-top">
             <div class="upload-btn-wrapper">
@@ -312,7 +311,6 @@
         return clean.replace(/(\d{4})(\d{3})(\d{3})/, "$1.$2.$3");
     }
 
-    // Đổ dữ liệu cấu trúc 2 lớp - 4 lịch học sạch sẽ
     function renderCardList(dataArray, targetContainerId) {
         const container = document.getElementById(targetContainerId);
         container.innerHTML = ""; 
@@ -370,7 +368,6 @@
         });
     }
 
-    // 📂 HÀM ĐỌC EXCEL TOÀN DIỆN MỌI SHEET (CỘNG DỒN)
     function handleExcelFiles(files) {
         if (files.length === 0) return;
         
@@ -389,24 +386,20 @@
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 
-                // Quét qua mọi sheet trong file
                 workbook.SheetNames.forEach(sheetName => {
                     const worksheet = workbook.Sheets[sheetName];
                     const matrixData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                     
                     if (matrixData && matrixData.length > 0) {
-                        const parsedSheetData = parseMatrix(matrixData);
+                        const targetGroup = targetClassification(file.name, sheetName);
                         
-                        if (parsedSheetData.length > 0) {
-                            const targetGroup = targetClassification(file.name, sheetName);
-                            
-                            if (targetGroup === "nhom") {
-                                tempPhanNhom = tempPhanNhom.concat(parsedSheetData);
-                            } else if (targetGroup === "giang") {
-                                tempTroGiang = tempTroGiang.concat(parsedSheetData);
-                            } else {
-                                tempChinh = tempChinh.concat(parsedSheetData);
-                            }
+                        // Đưa mảng tạm hiện tại vào để check trùng lặp chéo dòng
+                        if (targetGroup === "nhom") {
+                            tempPhanNhom = parseMatrixAndMerge(matrixData, tempPhanNhom);
+                        } else if (targetGroup === "giang") {
+                            tempTroGiang = parseMatrixAndMerge(matrixData, tempTroGiang);
+                        } else {
+                            tempChinh = parseMatrixAndMerge(matrixData, tempChinh);
                         }
                     }
                 });
@@ -437,9 +430,8 @@
         return "chinh";
     }
 
-    // Thiết kế bóc ma trận 4 lịch cho Excel đầu vào
-    function parseMatrix(matrix) {
-        let parsedData = [];
+    // 🛠️ LOGIC MỚI: KIỂM TRA TRÙNG VÀ GỘP LỊCH TỰ ĐỘNG KHI XUẤT HIỆN NHIỀU DÒNG
+    function parseMatrixAndMerge(matrix, currentGroupArray) {
         let headerIndex = -1;
 
         for (let i = 0; i < matrix.length; i++) {
@@ -457,23 +449,46 @@
             const row = matrix[i];
             if (!row || row.length === 0 || !row[0]) continue; 
             
-            // Đọc cấu trúc: Tên (cột 0), SĐT (cột 1), Tên lớp A (cột 2), B1 (cột 3), B2 (cột 4), Tên lớp B (cột 5), B3 (cột 6), B4 (cột 7)
-            parsedData.push({
-                hoTen: row[0] ? row[0].toString().trim() : "",
-                sdt: row[1] ? row[1].toString().trim() : "",
-                lopA: {
-                    tenLop: row[2] ? "📖 " + row[2].toString().trim() : "📖 Lớp dạy 1",
-                    b1: row[3] ? row[3].toString().trim() : "Chưa xếp lịch",
-                    b2: row[4] ? row[4].toString().trim() : "Chưa xếp lịch"
-                },
-                lopB: {
-                    tenLop: row[5] ? "📖 " + row[5].toString().trim() : "📖 Lớp dạy 2",
-                    b3: row[6] ? row[6].toString().trim() : "Chưa xếp lịch",
-                    b4: row[7] ? row[7].toString().trim() : "Chưa xếp lịch"
-                }
+            const hoTen = row[0] ? row[0].toString().trim() : "";
+            const sdt = row[1] ? row[1].toString().trim() : "";
+            const rawPhone = getRawPhone(sdt);
+
+            // Tạo mã nhận diện duy nhất (ưu tiên dùng Số điện thoại sạch, nếu ko có thì dùng Tên)
+            const uniqueKey = rawPhone ? rawPhone : hoTen.toLowerCase().replace(/\s+/g, '');
+
+            // Tìm xem giáo viên này đã được nạp ở hàng trước (hoặc sheet trước) chưa
+            let existingTeacher = currentGroupArray.find(item => {
+                const itemPhone = getRawPhone(item.sdt);
+                const itemKey = itemPhone ? itemPhone : item.hoTen.toLowerCase().replace(/\s+/g, '');
+                return itemKey === uniqueKey;
             });
+
+            if (existingTeacher) {
+                // NẾU ĐÃ CÓ: Chuyển dữ liệu của hàng mới này vào ô Lớp B (Buổi 3, Buổi 4)
+                existingTeacher.lopB = {
+                    tenLop: row[2] ? "📖 " + row[2].toString().trim() : "📖 Lớp dạy 2",
+                    b3: row[3] ? row[3].toString().trim() : "Trống",
+                    b4: row[4] ? row[4].toString().trim() : "Trống"
+                };
+            } else {
+                // NẾU CHƯA CÓ: Tạo mới dữ liệu và mặc định gán vào Lớp A (Buổi 1, Buổi 2)
+                currentGroupArray.push({
+                    hoTen: hoTen,
+                    sdt: sdt,
+                    lopA: {
+                        tenLop: row[2] ? "📖 " + row[2].toString().trim() : "📖 Lớp dạy 1",
+                        b1: row[3] ? row[3].toString().trim() : "Trống",
+                        b2: row[4] ? row[4].toString().trim() : "Trống"
+                    },
+                    lopB: {
+                        tenLop: "📖 Không có lớp 2",
+                        b3: "Trống",
+                        b4: "Trống"
+                    }
+                });
+            }
         }
-        return parsedData;
+        return currentGroupArray;
     }
 
     function clearStoredData() {
