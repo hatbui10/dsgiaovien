@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Danh sách giáo viên</title>
+    <title>Quản Lý Nhân Sự Giảng Dạy</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         * {
@@ -84,7 +84,7 @@
         .upload-btn-wrapper input[type=file] {
             font-size: 100px;
             position: absolute;
-left: 0;
+            left: 0;
             top: 0;
             opacity: 0;
             width: 100%;
@@ -172,6 +172,9 @@ left: 0;
         .class-section {
             margin-bottom: 6px;
         }
+        .class-section.hidden {
+            display: none; /* Ẩn khối lớp B nếu giáo viên không dạy lớp thứ 2 */
+        }
         .class-section-title {
             font-size: 0.8em;
             color: #1abc9c;
@@ -198,6 +201,9 @@ left: 0;
             align-items: center;
             justify-content: space-between;
             font-size: 0.78em;
+        }
+        .session-row.hidden {
+            display: none; /* Ẩn ô lịch nếu không có dữ liệu buổi đó */
         }
         .session-title {
             font-weight: bold;
@@ -324,6 +330,13 @@ left: 0;
             const rawPhone = getRawPhone(item.sdt);
             const displayPhone = formatPhoneDisplay(item.sdt);
             
+            // Logic ẩn khối lớp B nếu giáo viên không có dữ liệu lớp thứ 2
+            const hideClassB = (!item.lopB || !item.lopB.tenLop || item.lopB.tenLop.includes("Không có")) ? "hidden" : "";
+            
+            // Logic ẩn từng buổi lẻ nếu trống dữ liệu lịch học để màn hình siêu gọn
+            const hideB2 = (!item.lopA.b2 || item.lopA.b2 === "Trống") ? "hidden" : "";
+            const hideB4 = (hideClassB || !item.lopB.b4 || item.lopB.b4 === "Trống") ? "hidden" : "";
+
             const card = document.createElement("div");
             card.className = "user-card";
             card.innerHTML = `
@@ -331,6 +344,7 @@ left: 0;
                     <div class="user-name">${item.hoTen}</div>
                 </div>
                 
+                <!-- LỚP THỨ NHẤT (A) -->
                 <div class="class-section">
                     <div class="class-section-title">${item.lopA.tenLop}</div>
                     <div class="session-container">
@@ -338,23 +352,24 @@ left: 0;
                             <span class="session-title">B1:</span>
                             <div class="session-info">${item.lopA.b1}</div>
                         </div>
-                        <div class="session-row">
+                        <div class="session-row ${hideB2}">
                             <span class="session-title">B2:</span>
                             <div class="session-info">${item.lopA.b2}</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="class-section">
-                    <div class="class-section-title">${item.lopB.tenLop}</div>
+                <!-- LỚP THỨ HAI (B) -->
+                <div class="class-section ${hideClassB}">
+                    <div class="class-section-title">${item.lopB ? item.lopB.tenLop : ''}</div>
                     <div class="session-container">
                         <div class="session-row">
                             <span class="session-title">B3:</span>
-                            <div class="session-info">${item.lopB.b3}</div>
+                            <div class="session-info">${item.lopB ? item.lopB.b3 : ''}</div>
                         </div>
-                        <div class="session-row">
+                        <div class="session-row ${hideB4}">
                             <span class="session-title">B4:</span>
-                            <div class="session-info">${item.lopB.b4}</div>
+                            <div class="session-info">${item.lopB ? item.lopB.b4 : ''}</div>
                         </div>
                     </div>
                 </div>
@@ -393,7 +408,6 @@ left: 0;
                     if (matrixData && matrixData.length > 0) {
                         const targetGroup = targetClassification(file.name, sheetName);
                         
-                        // Đưa mảng tạm hiện tại vào để check trùng lặp chéo dòng
                         if (targetGroup === "nhom") {
                             tempPhanNhom = parseMatrixAndMerge(matrixData, tempPhanNhom);
                         } else if (targetGroup === "giang") {
@@ -430,7 +444,7 @@ left: 0;
         return "chinh";
     }
 
-    // 🛠️ LOGIC MỚI: KIỂM TRA TRÙNG VÀ GỘP LỊCH TỰ ĐỘNG KHI XUẤT HIỆN NHIỀU DÒNG
+    // 🛠️ ĐỊNH TUYẾN GOM LỊCH THÔNG MINH THEO TÊN LỚP HỌC
     function parseMatrixAndMerge(matrix, currentGroupArray) {
         let headerIndex = -1;
 
@@ -451,12 +465,15 @@ left: 0;
             
             const hoTen = row[0] ? row[0].toString().trim() : "";
             const sdt = row[1] ? row[1].toString().trim() : "";
-            const rawPhone = getRawPhone(sdt);
+            const incomingClassName = row[2] ? "📖 " + row[2].toString().trim() : "📖 Lớp dạy 1";
+            
+            // Lịch nạp vào mặc định ở cột 3
+            const incomingSchedule = row[3] ? row[3].toString().trim() : "Trống";
 
-            // Tạo mã nhận diện duy nhất (ưu tiên dùng Số điện thoại sạch, nếu ko có thì dùng Tên)
+            const rawPhone = getRawPhone(sdt);
             const uniqueKey = rawPhone ? rawPhone : hoTen.toLowerCase().replace(/\s+/g, '');
 
-            // Tìm xem giáo viên này đã được nạp ở hàng trước (hoặc sheet trước) chưa
+            // 1. Tìm xem giáo viên này đã tồn tại trong danh sách chưa
             let existingTeacher = currentGroupArray.find(item => {
                 const itemPhone = getRawPhone(item.sdt);
                 const itemKey = itemPhone ? itemPhone : item.hoTen.toLowerCase().replace(/\s+/g, '');
@@ -464,21 +481,32 @@ left: 0;
             });
 
             if (existingTeacher) {
-                // NẾU ĐÃ CÓ: Chuyển dữ liệu của hàng mới này vào ô Lớp B (Buổi 3, Buổi 4)
-                existingTeacher.lopB = {
-                    tenLop: row[2] ? "📖 " + row[2].toString().trim() : "📖 Lớp dạy 2",
-                    b3: row[3] ? row[3].toString().trim() : "Trống",
-                    b4: row[4] ? row[4].toString().trim() : "Trống"
-                };
+                // 2. NẾU ĐÃ TỒN TẠI GIÁO VIÊN: Kiểm tra tên lớp học trùng hay khác
+                if (existingTeacher.lopA.tenLop.toLowerCase() === incomingClassName.toLowerCase()) {
+                    // CÙNG TÊN LỚP -> Đẩy vào Buổi 2 (B2) của Lớp A thay vì nhảy sang Lớp B
+                    existingTeacher.lopA.b2 = incomingSchedule;
+                } else {
+                    // KHÁC TÊN LỚP -> Chuyển sang kích hoạt Lớp B (B3 và B4)
+                    if (!existingTeacher.lopB || existingTeacher.lopB.tenLop.includes("Không có")) {
+                        existingTeacher.lopB = {
+                            tenLop: incomingClassName,
+                            b3: incomingSchedule,
+                            b4: "Trống"
+                        };
+                    } else if (existingTeacher.lopB.tenLop.toLowerCase() === incomingClassName.toLowerCase()) {
+                        // Nếu dòng thứ 4 xuất hiện lại của lớp B thì cho vào B4
+                        existingTeacher.lopB.b4 = incomingSchedule;
+                    }
+                }
             } else {
-                // NẾU CHƯA CÓ: Tạo mới dữ liệu và mặc định gán vào Lớp A (Buổi 1, Buổi 2)
+                // 3. NẾU CHƯA CÓ GIÁO VIÊN: Tạo mới hoàn toàn, gán lịch vào Buổi 1 (B1)
                 currentGroupArray.push({
                     hoTen: hoTen,
                     sdt: sdt,
                     lopA: {
-                        tenLop: row[2] ? "📖 " + row[2].toString().trim() : "📖 Lớp dạy 1",
-                        b1: row[3] ? row[3].toString().trim() : "Trống",
-                        b2: row[4] ? row[4].toString().trim() : "Trống"
+                        tenLop: incomingClassName,
+                        b1: incomingSchedule,
+                        b2: "Trống"
                     },
                     lopB: {
                         tenLop: "📖 Không có lớp 2",
@@ -506,38 +534,4 @@ left: 0;
     function renderAllLists() {
         renderCardList(gvChinhData, "gv-chinh-cards");
         renderCardList(gvPhanNhomData, "gv-phan-nhom-cards");
-        renderCardList(troGiangData, "tro-giang-cards");
-    }
-
-    function loadSavedData() {
-        const storedChinh = localStorage.getItem("gvChinhData");
-        const storedNhom = localStorage.getItem("gvPhanNhomData");
-        const storedGiang = localStorage.getItem("troGiangData");
-
-        if (storedChinh) gvChinhData = JSON.parse(storedChinh);
-        if (storedNhom) gvPhanNhomData = JSON.parse(storedNhom);
-        if (storedGiang) troGiangData = JSON.parse(storedGiang);
-
-        renderAllLists();
-    }
-
-    function toggleAccordion(contentId, headerElement) {
-        const content = document.getElementById(contentId);
-        const isOpen = content.classList.contains('open');
-        if (isOpen) {
-            content.classList.remove('open');
-            headerElement.classList.remove('active');
-        } else {
-            content.classList.add('open');
-            headerElement.classList.add('active');
-        }
-    }
-
-    window.onload = function() {
-        loadSavedData();
-    };
-</script>
-
-</body>
-    </html>
-    
+        re
