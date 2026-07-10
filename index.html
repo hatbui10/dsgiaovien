@@ -17,7 +17,7 @@
         }
         .container {
             width: 100%;
-            max-width: 1000px;
+            max-width: 1100px;
             background: #2a2a35;
             padding: 30px;
             border-radius: 8px;
@@ -198,19 +198,33 @@
         tr:hover {
             background-color: #333344;
         }
-        .btn-call {
-            display: inline-block;
-            background-color: #1ba3b5;
+        
+        /* KHU VỰC CÁC NÚT LIÊN HỆ */
+        .contact-group {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .btn-call, .btn-zalo {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             color: white;
             padding: 6px 12px;
             text-decoration: none;
             border-radius: 20px;
             font-weight: bold;
-            font-size: 0.9em;
-            transition: background 0.3s ease;
+            font-size: 0.85em;
+            transition: opacity 0.3s ease;
         }
-        .btn-call:hover {
-            background-color: #15808f;
+        .btn-call {
+            background-color: #1ba3b5;
+        }
+        .btn-zalo {
+            background-color: #0068ff; /* Màu thương hiệu Zalo */
+        }
+        .btn-call:hover, .btn-zalo:hover {
+            opacity: 0.85;
         }
         .badge-lop {
             background-color: #27ae60;
@@ -223,18 +237,19 @@
             background-color: #8e44ad;
         }
 
-        @media screen and (max-width: 600px) {
+        @media screen and (max-width: 768px) {
+            .contact-group { flex-direction: column; gap: 5px; }
             .tab-navigation { flex-direction: row; }
             .tab-btn { flex: 1; text-align: center; padding: 12px 5px; font-size: 0.9em; }
             table, thead, tbody, th, td, tr { display: block; }
             thead tr { position: absolute; top: -9999px; left: -9999px; }
             tr { border: 1px solid #3e3e4f; margin-bottom: 10px; border-radius: 4px; padding: 10px; background: #22222d; }
-            td { border: none; border-bottom: 1px solid #3e3e4f; position: relative; padding-left: 50%; text-align: right; }
-            td:before { position: absolute; left: 10px; width: 45%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: bold; color: #a0a0b0; }
+            td { border: none; border-bottom: 1px solid #3e3e4f; position: relative; padding-left: 45%; text-align: right; }
+            td:before { position: absolute; left: 10px; width: 40%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: bold; color: #a0a0b0; }
             td:nth-of-type(1):before { content: "Họ và Tên"; }
             td:nth-of-type(2):before { content: "Liên hệ"; }
             td:nth-of-type(3):before { content: "Tên Lớp"; }
-            td:nth-of-type(4):before { content: "Thời Gian Đăng Ký"; }
+            td:nth-of-type(4):before { content: "Thời Gian Giảng Dạy"; }
         }
     </style>
 </head>
@@ -249,7 +264,7 @@
             <input type="file" id="excelFileInput" accept=".xlsx, .xls" multiple onchange="handleExcelFiles(this.files)">
         </div>
         <button class="btn-action btn-danger" onclick="clearStoredData()">🗑️ Xóa dữ liệu cũ</button>
-        <div id="fileStatus" class="file-status">Chưa chọn file mới. Hệ thống sẽ tự động giữ lại danh sách cũ từ bộ nhớ trình duyệt.</div>
+        <div id="fileStatus" class="file-status">Chưa chọn file mới. Hệ thống tự động giữ lại danh sách cũ từ bộ nhớ trình duyệt.</div>
     </div>
     
     <div class="tab-navigation">
@@ -311,19 +326,25 @@
 </div>
 
 <script>
-    // Khởi tạo các mảng dữ liệu rỗng toàn cục
     let gvChinhData = [];
     let gvPhanNhomData = [];
     let troGiangData = [];
 
-    // Tự động định dạng SĐT (Thêm số 0 ở đầu nếu thiếu và chuyển thành xxxx.xxx.xxx)
-    function formatPhone(phoneStr) {
+    // Trả về số điện thoại gốc nguyên bản (chỉ có số) để nhét vào link href (tel: hoặc zalo.me)
+    function getCleanPhone(phoneStr) {
         if (!phoneStr) return "";
         let cleanPhone = phoneStr.toString().trim().replace(/[^0-9]/g, "");
         if (cleanPhone.length > 0 && !cleanPhone.startsWith("0")) {
             cleanPhone = "0" + cleanPhone;
         }
-        return cleanPhone.replace(/(\d{4})(\d{3})(\d{3})/, "$1.$2.$3");
+        return cleanPhone;
+    }
+
+    // Định dạng hiển thị đẹp mắt: xxxx.xxx.xxx
+    function formatPhoneDisplay(phoneStr) {
+        let clean = getCleanPhone(phoneStr);
+        if (!clean) return "";
+        return clean.replace(/(\d{4})(\d{3})(\d{3})/, "$1.$2.$3");
     }
 
     // Đổ dữ liệu vào bảng HTML
@@ -337,10 +358,18 @@
         }
 
         dataArray.forEach(item => {
+            const rawPhone = getCleanPhone(item.sdt);
+            const displayPhone = formatPhoneDisplay(item.sdt);
+            
             const tr = document.createElement("tr");
             tr.innerHTML = `
                 <td><strong>${item.hoTen}</strong></td>
-                <td><a href="tel:${item.sdt}" class="btn-call">📞 Gọi: ${formatPhone(item.sdt)}</a></td>
+                <td>
+                    <div class="contact-group">
+                        <a href="tel:${rawPhone}" class="btn-call">📞 Gọi: ${displayPhone}</a>
+                        <a href="https://zalo.me/${rawPhone}" target="_blank" class="btn-zalo">💬 Zalo</a>
+                    </div>
+                </td>
                 <td><span class="badge-lop">${item.lop}</span></td>
                 <td>${item.thoiGian}</td>
             `;
@@ -348,7 +377,7 @@
         });
     }
 
-    // Đọc file Excel (.xlsx / .xls) bằng SheetJS
+    // Đọc dữ liệu Excel bằng SheetJS
     function handleExcelFiles(files) {
         if (files.length === 0) return;
         
@@ -361,28 +390,21 @@
             reader.onload = function(e) {
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
-                
-                // Đọc sheet đầu tiên của file Excel
                 const firstSheetName = workbook.SheetNames[0];
                 const worksheet = workbook.Sheets[firstSheetName];
-                
-                // Chuyển worksheet thành dạng mảng 2 chiều
                 const matrixData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
                 
                 processExcelMatrix(matrixData, file.name);
             };
             reader.readAsArrayBuffer(file);
         }
-        
         document.getElementById("fileStatus").innerText = "Đã nạp file thành công: " + fileNames.join(", ");
     }
 
-    // Bóc tách ma trận ô dữ liệu Excel
     function processExcelMatrix(matrix, fileName) {
         let parsedData = [];
         let headerIndex = -1;
 
-        // Quét tìm hàng chứa tiêu đề "Họ và Tên"
         for (let i = 0; i < matrix.length; i++) {
             const row = matrix[i].map(cell => cell ? cell.toString().trim() : "");
             if (row.includes("Họ và Tên") || row.includes("Họ và tên")) {
@@ -391,12 +413,11 @@
             }
         }
 
-        // Nếu không tìm thấy tiêu đề cố định, mặc định bắt đầu đọc từ dòng thứ 2 (chỉ số 1)
         let startRow = headerIndex !== -1 ? headerIndex + 1 : 1;
 
         for (let i = startRow; i < matrix.length; i++) {
             const row = matrix[i];
-            if (!row || row.length === 0 || !row[0]) continue; // Bỏ qua dòng rỗng hoặc thiếu Tên
+            if (!row || row.length === 0 || !row[0]) continue; 
             
             parsedData.push({
                 hoTen: row[0] ? row[0].toString().trim() : "",
@@ -406,7 +427,6 @@
             });
         }
 
-        // Nhận diện file đổ vào mảng tương ứng dựa theo tên file
         const nameLower = fileName.toLowerCase();
         if (nameLower.includes("chinh")) {
             gvChinhData = parsedData;
@@ -421,14 +441,13 @@
             localStorage.setItem("troGiangData", JSON.stringify(troGiangData));
             renderTable(troGiangData, "tro-giang-body");
         } else {
-            // Mặc định nếu tên file không trùng từ khóa
             gvChinhData = parsedData;
             localStorage.setItem("gvChinhData", JSON.stringify(gvChinhData));
             renderTable(gvChinhData, "giao-vien-chinh-body");
         }
     }
 
-    // Xóa toàn bộ dữ liệu trong localStorage và giao diện
+    // Xóa LocalStorage
     function clearStoredData() {
         if(confirm("Bạn có chắc chắn muốn xóa toàn bộ danh sách dữ liệu cũ không?")) {
             localStorage.removeItem("gvChinhData");
@@ -451,7 +470,6 @@
         renderTable(troGiangData, "tro-giang-body");
     }
 
-    // Khởi động nạp lại dữ liệu cũ từ bộ nhớ LocalStorage khi mở trang
     function loadSavedData() {
         const storedChinh = localStorage.getItem("gvChinhData");
         const storedNhom = localStorage.getItem("gvPhanNhomData");
@@ -464,14 +482,12 @@
         renderAllTables();
     }
 
-    // Giao diện Accordion ẩn/hiện
     function toggleAccordion(contentId, headerElement) {
         const content = document.getElementById(contentId);
         content.classList.toggle('open');
         headerElement.classList.toggle('active');
     }
 
-    // Tab chính điều hướng giảng viên / trợ giảng
     function setupTabSwitching() {
         const buttons = document.querySelectorAll('.tab-btn');
         const contents = document.querySelectorAll('.tab-content');
