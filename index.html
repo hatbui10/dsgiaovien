@@ -2,75 +2,82 @@
 <html lang="vi">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Quản Lý Nhân Sự Giảng Dạy</title>
     <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent; /* Tắt viền xanh khi chạm trên điện thoại */
+        }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #1e1e24;
-            color: #e0e0e6;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #121216;
+            color: #e2e8f0;
             margin: 0;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
+            padding: 12px;
         }
         .container {
             width: 100%;
-            max-width: 1100px;
-            background: #2a2a35;
-            padding: 30px;
-            border-radius: 8px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            max-width: 500px; /* Tối ưu kích thước màn hình điện thoại */
+            margin: 0 auto;
+            background: #1e1e24;
+            padding: 16px;
+            border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.4);
         }
         h2 {
             text-align: center;
             color: #ffffff;
-            margin-top: 10px;
-            margin-bottom: 10px;
+            margin: 8px 0 16px 0;
+            font-size: 1.25em;
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.5px;
         }
         
-        /* KHU VỰC THAO TÁC DỮ LIỆU */
+        /* KHU VỰC THAO TÁC (TẢI FILE / XÓA) */
         .action-section {
-            background: #333344;
-            padding: 15px;
-            border-radius: 6px;
-            margin-bottom: 25px;
-            border: 1px dashed #555566;
-            text-align: center;
+            background: #262631;
+            padding: 14px;
+            border-radius: 12px;
+            margin-bottom: 16px;
+            border: 1px dashed #4a4a5a;
             display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 15px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .btn-group-top {
+            display: flex;
+            gap: 8px;
         }
         .upload-btn-wrapper {
             position: relative;
             overflow: hidden;
-            display: inline-block;
+            flex: 1;
         }
         .btn-action {
+            width: 100%;
             border: 2px solid #3498db;
             color: #3498db;
             background-color: transparent;
-            padding: 8px 20px;
-            border-radius: 20px;
-            font-size: 14px;
+            padding: 10px;
+            border-radius: 25px;
+            font-size: 13px;
             font-weight: bold;
-            transition: all 0.3s;
+            transition: all 0.2s;
             cursor: pointer;
+            text-align: center;
         }
-        .btn-action:hover {
+        .btn-action:active {
             background-color: #3498db;
             color: white;
         }
         .btn-danger {
             border-color: #e74c3c;
             color: #e74c3c;
+            flex: 1;
         }
-        .btn-danger:hover {
+        .btn-danger:active {
             background-color: #e74c3c;
             color: white;
         }
@@ -80,77 +87,36 @@
             left: 0;
             top: 0;
             opacity: 0;
-            cursor: pointer;
+            width: 100%;
+            height: 100%;
         }
         .file-status {
-            width: 100%;
-            margin-top: 5px;
-            font-size: 0.9em;
-            color: #b0b0c0;
+            font-size: 0.8em;
+            color: #94a3b8;
+            text-align: center;
+            line-height: 1.4;
         }
 
-        /* STYLE FOR ACCORDION */
-        .accordion-header {
-            background-color: #3a3a4a;
-            color: #3498db;
-            padding: 15px;
-            margin-top: 15px;
-            margin-bottom: 5px;
-            border-radius: 6px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 1.1em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            transition: all 0.3s ease;
-            user-select: none;
-            border-left: 4px solid #3498db;
-        }
-        .accordion-header.header-phan-nhom {
-            color: #1abc9c;
-            border-left-color: #1abc9c;
-        }
-        .accordion-header:hover {
-            background-color: #444456;
-        }
-        .accordion-icon {
-            transition: transform 0.3s ease;
-            font-size: 0.8em;
-        }
-        .accordion-header.active {
-            background-color: #333344;
-        }
-        .accordion-header.active .accordion-icon {
-            transform: rotate(180deg);
-        }
-        .accordion-content {
-            display: none;
-            overflow: hidden;
-            margin-bottom: 15px;
-        }
-        .accordion-content.open {
-            display: block;
-        }
-        
-        /* TAB NAVIGATION */
+        /* TAB NAVIGATION (PHONG CÁCH MOBILE APP) */
         .tab-navigation {
             display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-            border-bottom: 2px solid #3e3e4f;
-            padding-bottom: 10px;
+            background: #262631;
+            padding: 4px;
+            border-radius: 30px;
+            margin-bottom: 16px;
         }
         .tab-btn {
-            padding: 10px 20px;
-            font-size: 1em;
+            flex: 1;
+            padding: 10px 4px;
+            font-size: 0.85em;
             font-weight: bold;
-            color: #a0a0b0;
-            background: #3a3a4a;
+            color: #94a3b8;
+            background: transparent;
             border: none;
-            border-radius: 6px;
+            border-radius: 25px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s;
+            text-align: center;
         }
         .tab-btn.active[data-tab="giao-vien"] {
             background-color: #3498db;
@@ -160,10 +126,6 @@
             background-color: #e67e22;
             color: white;
         }
-        .tab-btn:hover {
-            opacity: 0.9;
-            background: #4a4a5a;
-        }
 
         .tab-content {
             display: none;
@@ -172,104 +134,142 @@
             display: block;
         }
 
-        table {
-            width: 100%;
-            border-collapse: collapse;
+        /* STYLE FOR ACCORDION (THANH BẤM DI ĐỘNG) */
+        .accordion-header {
+            background-color: #262631;
+            color: #3498db;
+            padding: 14px 16px;
             margin-top: 10px;
-            margin-bottom: 20px;
+            margin-bottom: 6px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 0.95em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+            border-left: 4px solid #3498db;
         }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #3e3e4f;
-            vertical-align: middle;
+        .accordion-header.header-phan-nhom {
+            color: #1abc9c;
+            border-left-color: #1abc9c;
         }
-        th {
-            background-color: #3498db;
-            color: white;
-            font-weight: 600;
+        .accordion-icon {
+            transition: transform 0.2s ease;
+            font-size: 0.8em;
         }
-        .table-phannhom th {
-            background-color: #1abc9c;
+        .accordion-header.active .accordion-icon {
+            transform: rotate(180deg);
         }
-        .table-trogiang th {
-            background-color: #e67e22;
+        .accordion-content {
+            display: none;
+            margin-bottom: 10px;
         }
-        tr:hover {
-            background-color: #333344;
+        .accordion-content.open {
+            display: block;
         }
         
-        /* KHU VỰC CÁC NÚT LIÊN HỆ */
-        .contact-group {
+        /* 📱 DANH SÁCH DẠNG THẺ (MOBILE CARDS) */
+        .card-list {
             display: flex;
-            gap: 8px;
-            flex-wrap: wrap;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 6px;
         }
-        .btn-call, .btn-zalo {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            padding: 6px 12px;
-            text-decoration: none;
-            border-radius: 20px;
+        .user-card {
+            background: #262631;
+            border-radius: 12px;
+            padding: 14px;
+            border-left: 3px solid #555566;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+        }
+        .user-info-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+        .user-name {
+            font-size: 1.05em;
             font-weight: bold;
-            font-size: 0.85em;
-            transition: opacity 0.3s ease;
-        }
-        .btn-call {
-            background-color: #1ba3b5;
-        }
-        .btn-zalo {
-            background-color: #0068ff; /* Màu thương hiệu Zalo */
-        }
-        .btn-call:hover, .btn-zalo:hover {
-            opacity: 0.85;
+            color: #ffffff;
         }
         .badge-lop {
             background-color: #27ae60;
             color: white;
-            padding: 4px 8px;
-            border-radius: 4px;
-            font-size: 0.9em;
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.75em;
+            font-weight: 600;
         }
         .table-trogiang .badge-lop {
             background-color: #8e44ad;
         }
-
-        @media screen and (max-width: 768px) {
-            .contact-group { flex-direction: column; gap: 5px; }
-            .tab-navigation { flex-direction: row; }
-            .tab-btn { flex: 1; text-align: center; padding: 12px 5px; font-size: 0.9em; }
-            table, thead, tbody, th, td, tr { display: block; }
-            thead tr { position: absolute; top: -9999px; left: -9999px; }
-            tr { border: 1px solid #3e3e4f; margin-bottom: 10px; border-radius: 4px; padding: 10px; background: #22222d; }
-            td { border: none; border-bottom: 1px solid #3e3e4f; position: relative; padding-left: 45%; text-align: right; }
-            td:before { position: absolute; left: 10px; width: 40%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: bold; color: #a0a0b0; }
-            td:nth-of-type(1):before { content: "Họ và Tên"; }
-            td:nth-of-type(2):before { content: "Liên hệ"; }
-            td:nth-of-type(3):before { content: "Tên Lớp"; }
-            td:nth-of-type(4):before { content: "Thời Gian Giảng Dạy"; }
+        .user-time {
+            font-size: 0.82em;
+            color: #94a3b8;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        /* KHU VỰC NÚT LIÊN HỆ LỚN DỄ CHẠM */
+        .contact-actions {
+            display: flex;
+            gap: 8px;
+        }
+        .btn-phone, .btn-zalo {
+            flex: 1;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            color: white;
+            padding: 10px 0;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: bold;
+            font-size: 0.85em;
+            text-align: center;
+        }
+        .btn-phone {
+            background-color: #1ba3b5;
+        }
+        .btn-zalo {
+            background-color: #0068ff;
+        }
+        .btn-phone:strong, .btn-zalo:strong {
+            opacity: 0.8;
+        }
+        .no-data {
+            text-align: center;
+            color: #64748b;
+            padding: 20px 0;
+            font-size: 0.9em;
         }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h2>Danh Sách Quản Lý Nhân Sự</h2>
+    <h2>Quản Lý Nhân Sự</h2>
     
     <div class="action-section">
-        <div class="upload-btn-wrapper">
-            <button class="btn-action">📂 Tải file Excel (.xlsx, .xls)</button>
-            <input type="file" id="excelFileInput" accept=".xlsx, .xls" multiple onchange="handleExcelFiles(this.files)">
+        <div class="btn-group-top">
+            <div class="upload-btn-wrapper">
+                <button class="btn-action">📂 Tải file Excel</button>
+                <input type="file" id="excelFileInput" accept=".xlsx, .xls" multiple onchange="handleExcelFiles(this.files)">
+            </div>
+            <button class="btn-action btn-danger" onclick="clearStoredData()">🗑️ Xóa cũ</button>
         </div>
-        <button class="btn-action btn-danger" onclick="clearStoredData()">🗑️ Xóa dữ liệu cũ</button>
-        <div id="fileStatus" class="file-status">Chưa chọn file mới. Hệ thống tự động giữ lại danh sách cũ từ bộ nhớ trình duyệt.</div>
+        <div id="fileStatus" class="file-status">Chưa chọn file mới. Đang sử dụng bộ nhớ tự động của trình duyệt.</div>
     </div>
     
     <div class="tab-navigation">
-        <button class="tab-btn active" data-tab="giao-vien">👨‍🏫 DANH SÁCH GIÁO VIÊN</button>
-        <button class="tab-btn" data-tab="tro-giang">🧑‍🎓 DANH SÁCH TRỢ GIẢNG</button>
+        <button class="tab-btn active" data-tab="giao-vien">👨‍🏫 GIÁO VIÊN</button>
+        <button class="tab-btn" data-tab="tro-giang">🧑‍🎓 TRỢ GIẢNG</button>
     </div>
 
     <div id="giao-vien" class="tab-content active">
@@ -278,17 +278,7 @@
             <span class="accordion-icon">▼</span>
         </div>
         <div id="chinh-content" class="accordion-content">
-            <table>
-                <thead>
-                    <tr>
-                        <th>Họ và Tên</th>
-                        <th>Liên hệ</th>
-                        <th>Tên Lớp</th>
-                        <th>Thời Gian Giảng Dạy</th>
-                    </tr>
-                </thead>
-                <tbody id="giao-vien-chinh-body"></tbody>
-            </table>
+            <div id="giao-vien-chinh-list" class="card-list"></div>
         </div>
 
         <div class="accordion-header header-phan-nhom" onclick="toggleAccordion('phannhom-content', this)">
@@ -296,32 +286,12 @@
             <span class="accordion-icon">▼</span>
         </div>
         <div id="phannhom-content" class="accordion-content">
-            <table class="table-phannhom">
-                <thead>
-                    <tr>
-                        <th>Họ và Tên</th>
-                        <th>Liên hệ</th>
-                        <th>Tên Lớp</th>
-                        <th>Thời Gian Giảng Dạy</th>
-                    </tr>
-                </thead>
-                <tbody id="giao-vien-phannhom-body"></tbody>
-            </table>
+            <div id="giao-vien-phannhom-list" class="card-list"></div>
         </div>
     </div>
 
-    <div id="tro-giang" class="tab-content">
-        <table class="table-trogiang">
-            <thead>
-                <tr>
-                    <th>Họ và Tên</th>
-                    <th>Liên hệ</th>
-                    <th>Tên Lớp Hỗ Trợ</th>
-                    <th>Thời Gian Trực</th>
-                </tr>
-            </thead>
-            <tbody id="tro-giang-body"></tbody>
-        </table>
+    <div id="tro-giang" class="tab-content table-trogiang">
+        <div id="tro-giang-list" class="card-list"></div>
     </div>
 </div>
 
@@ -330,7 +300,7 @@
     let gvPhanNhomData = [];
     let troGiangData = [];
 
-    // Trả về số điện thoại gốc nguyên bản (chỉ có số) để nhét vào link href (tel: hoặc zalo.me)
+    // Lấy chuỗi số điện thoại chỉ gồm chữ số để làm link
     function getCleanPhone(phoneStr) {
         if (!phoneStr) return "";
         let cleanPhone = phoneStr.toString().trim().replace(/[^0-9]/g, "");
@@ -340,20 +310,20 @@
         return cleanPhone;
     }
 
-    // Định dạng hiển thị đẹp mắt: xxxx.xxx.xxx
+    // Tạo định dạng hiển thị xxxx.xxx.xxx
     function formatPhoneDisplay(phoneStr) {
         let clean = getCleanPhone(phoneStr);
         if (!clean) return "";
         return clean.replace(/(\d{4})(\d{3})(\d{3})/, "$1.$2.$3");
     }
 
-    // Đổ dữ liệu vào bảng HTML
-    function renderTable(dataArray, targetBodyId) {
-        const tbody = document.getElementById(targetBodyId);
-        tbody.innerHTML = ""; 
+    // Đổ dữ liệu dạng THẺ (CARD) cho di động
+    function renderCardList(dataArray, targetListId) {
+        const listContainer = document.getElementById(targetListId);
+        listContainer.innerHTML = ""; 
 
         if(!dataArray || dataArray.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Chưa có dữ liệu, hãy tải file lên.</td></tr>`;
+            listContainer.innerHTML = `<div class="no-data">Chưa có dữ liệu, hãy tải file lên.</div>`;
             return;
         }
 
@@ -361,23 +331,24 @@
             const rawPhone = getCleanPhone(item.sdt);
             const displayPhone = formatPhoneDisplay(item.sdt);
             
-            const tr = document.createElement("tr");
-            tr.innerHTML = `
-                <td><strong>${item.hoTen}</strong></td>
-                <td>
-                    <div class="contact-group">
-                        <a href="tel:${rawPhone}" class="btn-call">📞 Gọi: ${displayPhone}</a>
-                        <a href="https://zalo.me/${rawPhone}" target="_blank" class="btn-zalo">💬 Zalo</a>
-                    </div>
-                </td>
-                <td><span class="badge-lop">${item.lop}</span></td>
-                <td>${item.thoiGian}</td>
+            const card = document.createElement("div");
+            card.className = "user-card";
+            card.innerHTML = `
+                <div class="user-info-main">
+                    <div class="user-name">${item.hoTen}</div>
+                    <div class="badge-lop">${item.lop}</div>
+                </div>
+                <div class="user-time">🕒 Lịch: ${item.thoiGian}</div>
+                <div class="contact-actions">
+                    <a href="tel:${rawPhone}" class="btn-phone">📞 Gọi: ${displayPhone}</a>
+                    <a href="https://zalo.me/${rawPhone}" target="_blank" class="btn-zalo">💬 Zalo</a>
+                </div>
             `;
-            tbody.appendChild(tr);
+            listContainer.appendChild(card);
         });
     }
 
-    // Đọc dữ liệu Excel bằng SheetJS
+    // Đọc Excel trực tiếp bằng SheetJS
     function handleExcelFiles(files) {
         if (files.length === 0) return;
         
@@ -398,7 +369,7 @@
             };
             reader.readAsArrayBuffer(file);
         }
-        document.getElementById("fileStatus").innerText = "Đã nạp file thành công: " + fileNames.join(", ");
+        document.getElementById("fileStatus").innerText = "Đã nạp file: " + fileNames.join(", ");
     }
 
     function processExcelMatrix(matrix, fileName) {
@@ -431,25 +402,25 @@
         if (nameLower.includes("chinh")) {
             gvChinhData = parsedData;
             localStorage.setItem("gvChinhData", JSON.stringify(gvChinhData));
-            renderTable(gvChinhData, "giao-vien-chinh-body");
+            renderCardList(gvChinhData, "giao-vien-chinh-list");
         } else if (nameLower.includes("nhom")) {
             gvPhanNhomData = parsedData;
             localStorage.setItem("gvPhanNhomData", JSON.stringify(gvPhanNhomData));
-            renderTable(gvPhanNhomData, "giao-vien-phannhom-body");
+            renderCardList(gvPhanNhomData, "giao-vien-phannhom-list");
         } else if (nameLower.includes("giang") || nameLower.includes("tro")) {
             troGiangData = parsedData;
             localStorage.setItem("troGiangData", JSON.stringify(troGiangData));
-            renderTable(troGiangData, "tro-giang-body");
+            renderCardList(troGiangData, "tro-giang-list");
         } else {
             gvChinhData = parsedData;
             localStorage.setItem("gvChinhData", JSON.stringify(gvChinhData));
-            renderTable(gvChinhData, "giao-vien-chinh-body");
+            renderCardList(gvChinhData, "giao-vien-chinh-list");
         }
     }
 
     // Xóa LocalStorage
     function clearStoredData() {
-        if(confirm("Bạn có chắc chắn muốn xóa toàn bộ danh sách dữ liệu cũ không?")) {
+        if(confirm("Bạn có chắc chắn muốn xóa toàn bộ danh sách cũ không?")) {
             localStorage.removeItem("gvChinhData");
             localStorage.removeItem("gvPhanNhomData");
             localStorage.removeItem("troGiangData");
@@ -458,16 +429,16 @@
             gvPhanNhomData = [];
             troGiangData = [];
             
-            renderAllTables();
+            renderAllLists();
             document.getElementById("excelFileInput").value = "";
             document.getElementById("fileStatus").innerText = "Dữ liệu đã được xóa sạch. Hãy tải file mới.";
         }
     }
 
-    function renderAllTables() {
-        renderTable(gvChinhData, "giao-vien-chinh-body");
-        renderTable(gvPhanNhomData, "giao-vien-phannhom-body");
-        renderTable(troGiangData, "tro-giang-body");
+    function renderAllLists() {
+        renderCardList(gvChinhData, "giao-vien-chinh-list");
+        renderCardList(gvPhanNhomData, "giao-vien-phannhom-list");
+        renderCardList(troGiangData, "tro-giang-list");
     }
 
     function loadSavedData() {
@@ -479,15 +450,17 @@
         if (storedNhom) gvPhanNhomData = JSON.parse(storedNhom);
         if (storedGiang) troGiangData = JSON.parse(storedGiang);
 
-        renderAllTables();
+        renderAllLists();
     }
 
+    // Accordion ẩn/hiện
     function toggleAccordion(contentId, headerElement) {
         const content = document.getElementById(contentId);
         content.classList.toggle('open');
         headerElement.classList.toggle('active');
     }
 
+    // Chuyển Tab danh sách
     function setupTabSwitching() {
         const buttons = document.querySelectorAll('.tab-btn');
         const contents = document.querySelectorAll('.tab-content');
