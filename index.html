@@ -92,9 +92,10 @@
         }
         .file-status {
             font-size: 0.75em;
-            color: #94a3b8;
+            color: #2ecc71; /* Chuyển màu xanh lá cho trạng thái lưu */
             text-align: center;
             line-height: 1.3;
+            font-weight: 500;
         }
 
         /* 📱 THANH TIÊU ĐỀ ACCORDION BẤM ĐỂ ĐÓNG/MỞ */
@@ -117,7 +118,7 @@
         .header-chinh { color: #1abc9c; border-left-color: #1abc9c; }
         .header-phan-nhom { color: #9b59b6; border-left-color: #9b59b6; }
         .header-tro-giang { color: #e67e22; border-left-color: #e67e22; }
-        
+         
         .accordion-icon {
             transition: transform 0.2s ease;
             font-size: 0.8em;
@@ -259,7 +260,6 @@
 <div class="container">
     <h2>Quản Lý Nhân Sự</h2>
     
-    <!-- 📂 THANH THAO TÁC FILE ĐÃ QUAY TRỞ LẠI -->
     <div class="action-section">
         <div class="btn-group-top">
             <div class="upload-btn-wrapper">
@@ -268,10 +268,9 @@
             </div>
             <button class="btn-action-top btn-danger" onclick="clearStoredData()">🗑️ Xóa cũ</button>
         </div>
-        <div id="fileStatus" class="file-status">Đang sử dụng bộ nhớ tự động của trình duyệt.</div>
+        <div id="fileStatus" class="file-status">Chưa có dữ liệu trong bộ nhớ.</div>
     </div>
     
-    <!-- 1. GIÁO VIÊN CHÍNH -->
     <div class="accordion-header header-chinh" onclick="toggleAccordion('gv-chinh-content', this)">
         <span>⭐ GIÁO VIÊN CHÍNH</span>
         <span class="accordion-icon">▼</span>
@@ -280,7 +279,6 @@
         <div id="gv-chinh-cards" class="card-list"></div>
     </div>
 
-    <!-- 2. PHÂN NHÓM -->
     <div class="accordion-header header-phan-nhom" onclick="toggleAccordion('gv-phan-nhom-content', this)">
         <span>👥 GIÁO VIÊN PHÂN NHÓM</span>
         <span class="accordion-icon">▼</span>
@@ -289,7 +287,6 @@
         <div id="gv-phan-nhom-cards" class="card-list"></div>
     </div>
 
-    <!-- 3. TRỢ GIẢNG -->
     <div class="accordion-header header-tro-giang" onclick="toggleAccordion('tro-giang-content', this)">
         <span>🧑‍🎓 DANH SÁCH TRỢ GIẢNG</span>
         <span class="accordion-icon">▼</span>
@@ -306,7 +303,6 @@
 
     function getRawPhone(phoneStr) {
         if (phoneStr === null || phoneStr === undefined) return "";
-        // Ép kiểu chuỗi bắt buộc đề phòng Excel định dạng Number làm crash code gốc
         let cleanPhone = phoneStr.toString().trim().replace(/[^0-9]/g, "");
         if (cleanPhone.length > 0 && !cleanPhone.startsWith("0")) {
             cleanPhone = "0" + cleanPhone;
@@ -320,7 +316,6 @@
         return clean.replace(/(\d{4})(\d{3})(\d{3})/, "$1.$2.$3");
     }
 
-    // Đổ dữ liệu cấu trúc 2 lớp - 4 lịch học sạch sẽ
     function renderCardList(dataArray, targetContainerId) {
         const container = document.getElementById(targetContainerId);
         container.innerHTML = ""; 
@@ -334,10 +329,8 @@
             const rawPhone = getRawPhone(item.sdt);
             const displayPhone = formatPhoneDisplay(item.sdt);
             
-            // Logic ẩn lớp B nếu trống dữ liệu
             const hideClassB = (!item.lopB || !item.lopB.tenLop || item.lopB.tenLop.includes("Không có")) ? "hidden" : "";
             
-            // Ẩn các hàng lịch trống
             const hideB1 = (!item.lopA.b1 || item.lopA.b1 === "Trống") ? "hidden" : "";
             const hideB2 = (!item.lopA.b2 || item.lopA.b2 === "Trống") ? "hidden" : "";
             const hideB3 = (hideClassB || !item.lopB.b3 || item.lopB.b3 === "Trống") ? "hidden" : "";
@@ -387,7 +380,6 @@
         });
     }
 
-    // 📂 HÀM ĐỌC EXCEL TOÀN DIỆN MỌI SHEET (CỘNG DỒN)
     function handleExcelFiles(files) {
         if (files.length === 0) return;
         
@@ -406,7 +398,6 @@
                 const data = new Uint8Array(e.target.result);
                 const workbook = XLSX.read(data, { type: 'array' });
                 
-                // Quét qua mọi sheet trong file
                 workbook.SheetNames.forEach(sheetName => {
                     const worksheet = workbook.Sheets[sheetName];
                     const matrixData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
@@ -436,11 +427,11 @@
                     localStorage.setItem("troGiangData", JSON.stringify(troGiangData));
                     
                     renderAllLists();
+                    document.getElementById("fileStatus").innerText = "🔄 Đã lưu bộ nhớ: " + fileNames.join(", ");
                 }
             };
             reader.readAsArrayBuffer(file);
         }
-        document.getElementById("fileStatus").innerText = "Đã nạp: " + fileNames.join(", ");
     }
 
     function targetClassification(fileName, sheetName) {
@@ -450,14 +441,11 @@
         return "chinh";
     }
 
-    // 🛠️ ĐÃ SỬA LỖI ĐỌC MA TRẬN MẢNG (`row[0]`, `row[1]`) ĐÚNG THEO CODE GỐC CỦA BẠN
     function parseMatrixAndMerge(matrix, currentGroupArray) {
         let headerIndex = -1;
 
-        // Quét tìm hàng tiêu đề
         for (let i = 0; i < matrix.length; i++) {
             if (!matrix[i]) continue;
-            // Ép chuỗi an toàn tuyệt đối trước khi xử lý
             const rowStr = matrix[i].map(cell => cell ? cell.toString().trim().toLowerCase() : "");
             if (rowStr.includes("họ và tên") || rowStr.includes("ho va ten") || rowStr.includes("họ tên")) {
                 headerIndex = i;
@@ -471,7 +459,6 @@
             const row = matrix[i];
             if (!row || row.length === 0 || !row[0]) continue; 
             
-            // Đọc chuẩn chỉ theo vị trí cột dạng Ma Trận Mảng của code gốc
             const hoTen = row[0] ? row[0].toString().trim() : "";
             const sdt = row[1] ? row[1].toString().trim() : "";
             const incomingClassName = row[2] ? "📖 " + row[2].toString().trim() : "📖 Lớp dạy 1";
@@ -536,7 +523,8 @@
             gvChinhData = []; gvPhanNhomData = []; troGiangData = [];
             renderAllLists();
             document.getElementById("excelFileInput").value = "";
-            document.getElementById("fileStatus").innerText = "Dữ liệu đã được xóa sạch. Hãy tải file mới.";
+            document.getElementById("fileStatus").style.color = "#e74c3c";
+            document.getElementById("fileStatus").innerText = "🗑️ Bộ nhớ đã trống. Hãy nạp file mới.";
         }
     }
 
@@ -556,6 +544,14 @@
         if (storedGiang) troGiangData = JSON.parse(storedGiang);
 
         renderAllLists();
+
+        // Cập nhật dòng trạng thái để hiển thị rõ ràng cho bạn biết dữ liệu cũ đã được khôi phục thành công
+        if (storedChinh || storedNhom || storedGiang) {
+            document.getElementById("fileStatus").style.color = "#2ecc71";
+            document.getElementById("fileStatus").innerText = "✅ Đã tự động khôi phục dữ liệu từ bộ nhớ trình duyệt.";
+        } else {
+            document.getElementById("fileStatus").innerText = "Chưa có dữ liệu lưu trữ. Vui lòng chọn file.";
+        }
     }
 
     function toggleAccordion(contentId, headerElement) {
