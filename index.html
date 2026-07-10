@@ -4,10 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quản Lý Nhân Sự Giảng Dạy</title>
+    <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #f4f7f6;
+            background-color: #1e1e24;
+            color: #e0e0e6;
             margin: 0;
             padding: 20px;
             display: flex;
@@ -16,40 +18,140 @@
         .container {
             width: 100%;
             max-width: 1000px;
-            background: white;
+            background: #2a2a35;
             padding: 30px;
             border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
         }
         h2 {
             text-align: center;
-            color: #2c3e50;
+            color: #ffffff;
             margin-top: 10px;
-            margin-bottom: 25px;
+            margin-bottom: 10px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
         
-        /* Thanh điều hướng Tab cực đẹp */
+        /* KHU VỰC THAO TÁC DỮ LIỆU */
+        .action-section {
+            background: #333344;
+            padding: 15px;
+            border-radius: 6px;
+            margin-bottom: 25px;
+            border: 1px dashed #555566;
+            text-align: center;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .upload-btn-wrapper {
+            position: relative;
+            overflow: hidden;
+            display: inline-block;
+        }
+        .btn-action {
+            border: 2px solid #3498db;
+            color: #3498db;
+            background-color: transparent;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: bold;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+        .btn-action:hover {
+            background-color: #3498db;
+            color: white;
+        }
+        .btn-danger {
+            border-color: #e74c3c;
+            color: #e74c3c;
+        }
+        .btn-danger:hover {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .upload-btn-wrapper input[type=file] {
+            font-size: 100px;
+            position: absolute;
+            left: 0;
+            top: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+        .file-status {
+            width: 100%;
+            margin-top: 5px;
+            font-size: 0.9em;
+            color: #b0b0c0;
+        }
+
+        /* STYLE FOR ACCORDION */
+        .accordion-header {
+            background-color: #3a3a4a;
+            color: #3498db;
+            padding: 15px;
+            margin-top: 15px;
+            margin-bottom: 5px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s ease;
+            user-select: none;
+            border-left: 4px solid #3498db;
+        }
+        .accordion-header.header-phan-nhom {
+            color: #1abc9c;
+            border-left-color: #1abc9c;
+        }
+        .accordion-header:hover {
+            background-color: #444456;
+        }
+        .accordion-icon {
+            transition: transform 0.3s ease;
+            font-size: 0.8em;
+        }
+        .accordion-header.active {
+            background-color: #333344;
+        }
+        .accordion-header.active .accordion-icon {
+            transform: rotate(180deg);
+        }
+        .accordion-content {
+            display: none;
+            overflow: hidden;
+            margin-bottom: 15px;
+        }
+        .accordion-content.open {
+            display: block;
+        }
+        
+        /* TAB NAVIGATION */
         .tab-navigation {
             display: flex;
             gap: 10px;
             margin-bottom: 20px;
-            border-bottom: 2px solid #ddd;
+            border-bottom: 2px solid #3e3e4f;
             padding-bottom: 10px;
         }
         .tab-btn {
             padding: 10px 20px;
             font-size: 1em;
             font-weight: bold;
-            color: #7f8c8d;
-            background: #eee;
+            color: #a0a0b0;
+            background: #3a3a4a;
             border: none;
             border-radius: 6px;
             cursor: pointer;
             transition: all 0.3s ease;
         }
-        /* Style khi nút Tab được kích hoạt (Active) */
         .tab-btn.active[data-tab="giao-vien"] {
             background-color: #3498db;
             color: white;
@@ -60,13 +162,12 @@
         }
         .tab-btn:hover {
             opacity: 0.9;
+            background: #4a4a5a;
         }
 
-        /* Ẩn nội dung bảng khi chưa chọn */
         .tab-content {
             display: none;
         }
-        /* Hiển thị bảng khi được thêm class .active */
         .tab-content.active {
             display: block;
         }
@@ -80,7 +181,7 @@
         th, td {
             padding: 12px 15px;
             text-align: left;
-            border-bottom: 1px solid #ddd;
+            border-bottom: 1px solid #3e3e4f;
             vertical-align: middle;
         }
         th {
@@ -88,15 +189,18 @@
             color: white;
             font-weight: 600;
         }
+        .table-phannhom th {
+            background-color: #1abc9c;
+        }
         .table-trogiang th {
             background-color: #e67e22;
         }
         tr:hover {
-            background-color: #f5f5f5;
+            background-color: #333344;
         }
         .btn-call {
             display: inline-block;
-            background-color: #2ab7ca;
+            background-color: #1ba3b5;
             color: white;
             padding: 6px 12px;
             text-decoration: none;
@@ -106,59 +210,27 @@
             transition: background 0.3s ease;
         }
         .btn-call:hover {
-            background-color: #1b94a3;
+            background-color: #15808f;
         }
         .badge-lop {
-            background-color: #2ecc71;
+            background-color: #27ae60;
             color: white;
             padding: 4px 8px;
             border-radius: 4px;
             font-size: 0.9em;
         }
         .table-trogiang .badge-lop {
-            background-color: #9b59b6;
+            background-color: #8e44ad;
         }
 
         @media screen and (max-width: 600px) {
-            .tab-navigation {
-                flex-direction: row;
-            }
-            .tab-btn {
-                flex: 1;
-                text-align: center;
-                padding: 12px 5px;
-                font-size: 0.9em;
-            }
-            table, thead, tbody, th, td, tr {
-                display: block;
-            }
-            thead tr {
-                position: absolute;
-                top: -9999px;
-                left: -9999px;
-            }
-            tr {
-                border: 1px solid #ccc;
-                margin-bottom: 10px;
-                border-radius: 4px;
-                padding: 10px;
-            }
-            td {
-                border: none;
-                border-bottom: 1px solid #eee;
-                position: relative;
-                padding-left: 50%;
-                text-align: right;
-            }
-            td:before {
-                position: absolute;
-                left: 10px;
-                width: 45%;
-                padding-right: 10px;
-                white-space: nowrap;
-                text-align: left;
-                font-weight: bold;
-            }
+            .tab-navigation { flex-direction: row; }
+            .tab-btn { flex: 1; text-align: center; padding: 12px 5px; font-size: 0.9em; }
+            table, thead, tbody, th, td, tr { display: block; }
+            thead tr { position: absolute; top: -9999px; left: -9999px; }
+            tr { border: 1px solid #3e3e4f; margin-bottom: 10px; border-radius: 4px; padding: 10px; background: #22222d; }
+            td { border: none; border-bottom: 1px solid #3e3e4f; position: relative; padding-left: 50%; text-align: right; }
+            td:before { position: absolute; left: 10px; width: 45%; padding-right: 10px; white-space: nowrap; text-align: left; font-weight: bold; color: #a0a0b0; }
             td:nth-of-type(1):before { content: "Họ và Tên"; }
             td:nth-of-type(2):before { content: "Liên hệ"; }
             td:nth-of-type(3):before { content: "Tên Lớp"; }
@@ -171,24 +243,56 @@
 <div class="container">
     <h2>Danh Sách Quản Lý Nhân Sự</h2>
     
+    <div class="action-section">
+        <div class="upload-btn-wrapper">
+            <button class="btn-action">📂 Tải file Excel (.xlsx, .xls)</button>
+            <input type="file" id="excelFileInput" accept=".xlsx, .xls" multiple onchange="handleExcelFiles(this.files)">
+        </div>
+        <button class="btn-action btn-danger" onclick="clearStoredData()">🗑️ Xóa dữ liệu cũ</button>
+        <div id="fileStatus" class="file-status">Chưa chọn file mới. Hệ thống sẽ tự động giữ lại danh sách cũ từ bộ nhớ trình duyệt.</div>
+    </div>
+    
     <div class="tab-navigation">
         <button class="tab-btn active" data-tab="giao-vien">👨‍🏫 DANH SÁCH GIÁO VIÊN</button>
         <button class="tab-btn" data-tab="tro-giang">🧑‍🎓 DANH SÁCH TRỢ GIẢNG</button>
     </div>
 
     <div id="giao-vien" class="tab-content active">
-        <table>
-            <thead>
-                <tr>
-                    <th>Họ và Tên</th>
-                    <th>Liên hệ</th>
-                    <th>Tên Lớp</th>
-                    <th>Thời Gian Giảng Dạy</th>
-                </tr>
-            </thead>
-            <tbody id="giao-vien-body">
-                </tbody>
-        </table>
+        <div class="accordion-header" onclick="toggleAccordion('chinh-content', this)">
+            <span>⭐ GIÁO VIÊN CHÍNH</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div id="chinh-content" class="accordion-content">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Họ và Tên</th>
+                        <th>Liên hệ</th>
+                        <th>Tên Lớp</th>
+                        <th>Thời Gian Giảng Dạy</th>
+                    </tr>
+                </thead>
+                <tbody id="giao-vien-chinh-body"></tbody>
+            </table>
+        </div>
+
+        <div class="accordion-header header-phan-nhom" onclick="toggleAccordion('phannhom-content', this)">
+            <span>👥 GIÁO VIÊN PHÂN NHÓM</span>
+            <span class="accordion-icon">▼</span>
+        </div>
+        <div id="phannhom-content" class="accordion-content">
+            <table class="table-phannhom">
+                <thead>
+                    <tr>
+                        <th>Họ và Tên</th>
+                        <th>Liên hệ</th>
+                        <th>Tên Lớp</th>
+                        <th>Thời Gian Giảng Dạy</th>
+                    </tr>
+                </thead>
+                <tbody id="giao-vien-phannhom-body"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="tro-giang" class="tab-content">
@@ -201,165 +305,36 @@
                     <th>Thời Gian Trực</th>
                 </tr>
             </thead>
-            <tbody id="tro-giang-body">
-                </tbody>
+            <tbody id="tro-giang-body"></tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // 1. MẢNG DỮ LIỆU GIÁO VIÊN
-    const danhSachGiaoVien = [
-        {
-            hoTen: "Anh Thư",
-            sdt: "0901234567",
-            lop: "Lớp 10A1",
-            thoiGian: "Thứ 2, Thứ 4 (08:00 - 10:00)"
-        },
-        {
-            hoTen: "Phương Thanh",
-            sdt: "0912345678",
-            lop: "Lớp 11B2",
-            thoiGian: "Thứ 3, Thứ 5 (14:00 - 16:00)"
-        },
-{
-            hoTen: "Quỳnh Anh",
-            sdt: "0912345678",
-            lop: "Lớp 11B2",
-            thoiGian: "Thứ 3, Thứ 5 (14:00 - 16:00)"
-        },
-{
-            hoTen: "Thanh Mai",
-            sdt: "0912345678",
-            lop: "Lớp 11B2",
-            thoiGian: "Thứ 3, Thứ 5 (14:00 - 16:00)"
-        },
-{
-            hoTen: "Hà Linh",
-            sdt: "0912345678",
-            lop: "Lớp 11B2",
-            thoiGian: "Thứ 3, Thứ 5 (14:00 - 16:00)"
-        },
-{
-            hoTen: "Diệp Anh",
-            sdt: "0912345678",
-            lop: "Lớp 11B2",
-            thoiGian: "Thứ 3, Thứ 5 (14:00 - 16:00)"
-        },
-{
-            hoTen: "Mạnh Toàn",
-            sdt: "0912345678",
-            lop: "Lớp 11B2",
-            thoiGian: "Thứ 3, Thứ 5 (14:00 - 16:00)"
-        },
-{
-            hoTen: "Thu Minh",
-            sdt: "0912345678",
-            lop: "Lớp 11B2",
-            thoiGian: "Thứ 3, Thứ 5 (14:00 - 16:00)"
-        },
-{
-            hoTen: "Hà My",
-            sdt: "0912345678",
-            lop: "Lớp 11B2",
-            thoiGian: "Thứ 3, Thứ 5 (14:00 - 16:00)"
-        },
-{
-            hoTen: "Duyên",
-            sdt: "0912345678",
-            lop: "Lớp 11B2",
-            thoiGian: "Thứ 3, Thứ 5 (14:00 - 16:00)"
-        },
-{
-            hoTen: "Bảo Anh",
-            sdt: "0912345678",
-            lop: "Lớp 11B2",
-            thoiGian: "Thứ 3, Thứ 5 (14:00 - 16:00)"
-        },
+    // Khởi tạo các mảng dữ liệu rỗng toàn cục
+    let gvChinhData = [];
+    let gvPhanNhomData = [];
+    let troGiangData = [];
 
-        {
-            hoTen: "Hưng",
-            sdt: "0983456789",
-            lop: "Lớp 12C3",
-            thoiGian: "Thứ 7 (09:00 - 11:30)"
-        }
-    ];
-
-    // 2. MẢNG DỮ LIỆU TRỢ GIẢNG
-    const danhSachTroGiang = [
-        {
-            hoTen: "Quang Tùng",
-            sdt: "0977888999",
-            lop: "Lớp 10A1 & 11B2",
-            thoiGian: "Thứ 2, 3, 4, 5 (Theo ca học)"
-        },
-{
-            hoTen: "Phan Gia Phú",
-            sdt: "0977888999",
-            lop: "Lớp 10A1 & 11B2",
-            thoiGian: "Thứ 2, 3, 4, 5 (Theo ca học)"
-        },
-{
-            hoTen: "Nguyễn Hồng Ngọc",
-            sdt: "0977888999",
-            lop: "Lớp 10A1 & 11B2",
-            thoiGian: "Thứ 2, 3, 4, 5 (Theo ca học)"
-        },
-{
-            hoTen: "Vương Thuỳ Trang",
-            sdt: "0977888999",
-            lop: "Lớp 10A1 & 11B2",
-            thoiGian: "Thứ 2, 3, 4, 5 (Theo ca học)"
-        },
-{
-            hoTen: "Lê Anh Thư",
-            sdt: "0977888999",
-            lop: "Lớp 10A1 & 11B2",
-            thoiGian: "Thứ 2, 3, 4, 5 (Theo ca học)"
-        },
-        {
-            hoTen: "Khôi Nguyên",
-            sdt: "0965123456",
-            lop: "Lớp 12C3",
-            thoiGian: "Thứ 7 (08:30 - 12:00)"
-        },
-{
-            hoTen: "Hoàng Long",
-            sdt: "0965123456",
-            lop: "Lớp 12C3",
-            thoiGian: "Thứ 7 (08:30 - 12:00)"
-        },
-{
-            hoTen: "Xuân Bắc",
-            sdt: "0965123456",
-            lop: "Lớp 12C3",
-            thoiGian: "Thứ 7 (08:30 - 12:00)"
-        },
-{
-            hoTen: "Ninh Trang",
-            sdt: "0965123456",
-            lop: "Lớp 12C3",
-            thoiGian: "Thứ 7 (08:30 - 12:00)"
-        },
-{
-            hoTen: "Quang Vinh",
-            sdt: "0965123456",
-            lop: "Lớp 12C3",
-            thoiGian: "Thứ 7 (08:30 - 12:00)"
-        }
-
-    ];
-
-    // Định dạng SĐT tự động
+    // Tự động định dạng SĐT (Thêm số 0 ở đầu nếu thiếu và chuyển thành xxxx.xxx.xxx)
     function formatPhone(phoneStr) {
         if (!phoneStr) return "";
-        return phoneStr.replace(/(\d{4})(\d{3})(\d{3})/, "$1.$2.$3");
+        let cleanPhone = phoneStr.toString().trim().replace(/[^0-9]/g, "");
+        if (cleanPhone.length > 0 && !cleanPhone.startsWith("0")) {
+            cleanPhone = "0" + cleanPhone;
+        }
+        return cleanPhone.replace(/(\d{4})(\d{3})(\d{3})/, "$1.$2.$3");
     }
 
-    // Đổ dữ liệu vào bảng
+    // Đổ dữ liệu vào bảng HTML
     function renderTable(dataArray, targetBodyId) {
         const tbody = document.getElementById(targetBodyId);
         tbody.innerHTML = ""; 
+
+        if(!dataArray || dataArray.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#888;">Chưa có dữ liệu, hãy tải file lên.</td></tr>`;
+            return;
+        }
 
         dataArray.forEach(item => {
             const tr = document.createElement("tr");
@@ -373,18 +348,139 @@
         });
     }
 
-    // Logic xử lý bấm chuyển đổi Tab
+    // Đọc file Excel (.xlsx / .xls) bằng SheetJS
+    function handleExcelFiles(files) {
+        if (files.length === 0) return;
+        
+        let fileNames = [];
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            fileNames.push(file.name);
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const data = new Uint8Array(e.target.result);
+                const workbook = XLSX.read(data, { type: 'array' });
+                
+                // Đọc sheet đầu tiên của file Excel
+                const firstSheetName = workbook.SheetNames[0];
+                const worksheet = workbook.Sheets[firstSheetName];
+                
+                // Chuyển worksheet thành dạng mảng 2 chiều
+                const matrixData = XLSX.utils.sheet_to_json(worksheet, { header: 1 });
+                
+                processExcelMatrix(matrixData, file.name);
+            };
+            reader.readAsArrayBuffer(file);
+        }
+        
+        document.getElementById("fileStatus").innerText = "Đã nạp file thành công: " + fileNames.join(", ");
+    }
+
+    // Bóc tách ma trận ô dữ liệu Excel
+    function processExcelMatrix(matrix, fileName) {
+        let parsedData = [];
+        let headerIndex = -1;
+
+        // Quét tìm hàng chứa tiêu đề "Họ và Tên"
+        for (let i = 0; i < matrix.length; i++) {
+            const row = matrix[i].map(cell => cell ? cell.toString().trim() : "");
+            if (row.includes("Họ và Tên") || row.includes("Họ và tên")) {
+                headerIndex = i;
+                break;
+            }
+        }
+
+        // Nếu không tìm thấy tiêu đề cố định, mặc định bắt đầu đọc từ dòng thứ 2 (chỉ số 1)
+        let startRow = headerIndex !== -1 ? headerIndex + 1 : 1;
+
+        for (let i = startRow; i < matrix.length; i++) {
+            const row = matrix[i];
+            if (!row || row.length === 0 || !row[0]) continue; // Bỏ qua dòng rỗng hoặc thiếu Tên
+            
+            parsedData.push({
+                hoTen: row[0] ? row[0].toString().trim() : "",
+                sdt: row[1] ? row[1].toString().trim() : "",
+                lop: row[2] ? row[2].toString().trim() : "",
+                thoiGian: row[3] ? row[3].toString().trim() : "Chưa có lịch"
+            });
+        }
+
+        // Nhận diện file đổ vào mảng tương ứng dựa theo tên file
+        const nameLower = fileName.toLowerCase();
+        if (nameLower.includes("chinh")) {
+            gvChinhData = parsedData;
+            localStorage.setItem("gvChinhData", JSON.stringify(gvChinhData));
+            renderTable(gvChinhData, "giao-vien-chinh-body");
+        } else if (nameLower.includes("nhom")) {
+            gvPhanNhomData = parsedData;
+            localStorage.setItem("gvPhanNhomData", JSON.stringify(gvPhanNhomData));
+            renderTable(gvPhanNhomData, "giao-vien-phannhom-body");
+        } else if (nameLower.includes("giang") || nameLower.includes("tro")) {
+            troGiangData = parsedData;
+            localStorage.setItem("troGiangData", JSON.stringify(troGiangData));
+            renderTable(troGiangData, "tro-giang-body");
+        } else {
+            // Mặc định nếu tên file không trùng từ khóa
+            gvChinhData = parsedData;
+            localStorage.setItem("gvChinhData", JSON.stringify(gvChinhData));
+            renderTable(gvChinhData, "giao-vien-chinh-body");
+        }
+    }
+
+    // Xóa toàn bộ dữ liệu trong localStorage và giao diện
+    function clearStoredData() {
+        if(confirm("Bạn có chắc chắn muốn xóa toàn bộ danh sách dữ liệu cũ không?")) {
+            localStorage.removeItem("gvChinhData");
+            localStorage.removeItem("gvPhanNhomData");
+            localStorage.removeItem("troGiangData");
+            
+            gvChinhData = [];
+            gvPhanNhomData = [];
+            troGiangData = [];
+            
+            renderAllTables();
+            document.getElementById("excelFileInput").value = "";
+            document.getElementById("fileStatus").innerText = "Dữ liệu đã được xóa sạch. Hãy tải file mới.";
+        }
+    }
+
+    function renderAllTables() {
+        renderTable(gvChinhData, "giao-vien-chinh-body");
+        renderTable(gvPhanNhomData, "giao-vien-phannhom-body");
+        renderTable(troGiangData, "tro-giang-body");
+    }
+
+    // Khởi động nạp lại dữ liệu cũ từ bộ nhớ LocalStorage khi mở trang
+    function loadSavedData() {
+        const storedChinh = localStorage.getItem("gvChinhData");
+        const storedNhom = localStorage.getItem("gvPhanNhomData");
+        const storedGiang = localStorage.getItem("troGiangData");
+
+        if (storedChinh) gvChinhData = JSON.parse(storedChinh);
+        if (storedNhom) gvPhanNhomData = JSON.parse(storedNhom);
+        if (storedGiang) troGiangData = JSON.parse(storedGiang);
+
+        renderAllTables();
+    }
+
+    // Giao diện Accordion ẩn/hiện
+    function toggleAccordion(contentId, headerElement) {
+        const content = document.getElementById(contentId);
+        content.classList.toggle('open');
+        headerElement.classList.toggle('active');
+    }
+
+    // Tab chính điều hướng giảng viên / trợ giảng
     function setupTabSwitching() {
         const buttons = document.querySelectorAll('.tab-btn');
         const contents = document.querySelectorAll('.tab-content');
 
         buttons.forEach(btn => {
             btn.addEventListener('click', () => {
-                // Xóa trạng thái active của tất cả các nút và nội dung bảng cũ
                 buttons.forEach(b => b.classList.remove('active'));
                 contents.forEach(c => c.classList.remove('active'));
 
-                // Kích hoạt nút hiện tại và bảng tương ứng dựa trên thuộc tính data-tab
                 btn.classList.add('active');
                 const targetTabId = btn.getAttribute('data-tab');
                 document.getElementById(targetTabId).classList.add('active');
@@ -392,10 +488,8 @@
         });
     }
 
-    // Khởi tạo chạy ban đầu
     window.onload = function() {
-        renderTable(danhSachGiaoVien, "giao-vien-body");
-        renderTable(danhSachTroGiang, "tro-giang-body");
+        loadSavedData();
         setupTabSwitching();
     };
 </script>
