@@ -1,468 +1,102 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Danh sách giáo viên</title>
-
-<!-- Thư viện đọc file Excel -->
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
-
-<style>
-:root {
-    --bg-main: #0f172a;
-    --bg-card: #1e293b;
-    --border-color: #334155;
-    --text-main: #f8fafc;
-    --text-muted: #94a3b8;
-    --primary: #3b82f6;
-    --primary-hover: #2563eb;
-    --success: #10b981;
-    --success-hover: #059669;
-    --danger: #ef4444;
-    --danger-hover: #dc2626;
-}
-
-body {
-    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg-main);
-    color: var(--text-main);
-    margin: 0;
-    padding: 16px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    box-sizing: border-box;
-}
-
-.container {
-    width: 100%;
-    max-width: 1200px;
-}
-
-h1 {
-    font-size: 24px;
-    font-weight: 800;
-    margin-bottom: 20px;
-    text-align: center;
-    background: linear-gradient(to right, #3b82f6, #8b5cf6);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
-
-/* Khu vực điều khiển & Upload */
-.control-panel {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-}
-
-@media (min-width: 768px) {
-    .control-panel {
-        flex-direction: row;
-        align-items: center;
-        justify-content: space-between;
-    }
-}
-
-.control-actions {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    width: 100%;
-}
-
-@media (min-width: 768px) {
-    .control-actions {
-        display: flex;
-        width: auto;
-    }
-}
-
-/* Custom nút Upload file */
-.upload-btn-wrapper {
-    position: relative;
-    overflow: hidden;
-    display: block;
-    width: 100%;
-}
-
-.btn-upload {
-    border: 2px dashed var(--primary);
-    color: var(--primary);
-    background-color: transparent;
-    padding: 12px 10px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    width: 100%;
-    text-align: center;
-    box-sizing: border-box;
-    white-space: nowrap;
-}
-
-.btn-upload:hover {
-    background: rgba(59, 130, 246, 0.1);
-    border-color: var(--primary-hover);
-}
-
-.upload-btn-wrapper input[type=file] {
-    font-size: 100px;
-    position: absolute;
-    left: 0;
-    top: 0;
-    opacity: 0;
-    cursor: pointer;
-    width: 100%;
-    height: 100%;
-}
-
-/* Nút xóa dữ liệu */
-.btn-danger {
-    background: var(--danger);
-    color: white;
-    border: none;
-    padding: 12px 10px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    width: 100%;
-    box-sizing: border-box;
-}
-
-.btn-danger:hover {
-    background: var(--danger-hover);
-}
-
-/* Ô Tìm kiếm */
-.search-box {
-    background: var(--bg-main);
-    border: 1px solid var(--border-color);
-    padding: 12px 16px;
-    border-radius: 12px;
-    color: var(--text-main);
-    font-size: 15px;
-    width: 100%;
-    box-sizing: border-box;
-    outline: none;
-    transition: all 0.2s;
-}
-
-@media (min-width: 768px) {
-    .search-box {
-        max-width: 320px;
-    }
-}
-
-.search-box:focus {
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
-}
-
-/* Details Box */
-details {
-    background: var(--bg-card);
-    border: 1px solid var(--border-color);
-    border-radius: 16px;
-    overflow: hidden;
-    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);
-}
-
-summary {
-    background: linear-gradient(90deg, #1e293b, #0f172a);
-    color: var(--text-main);
-    padding: 16px;
-    font-size: 16px;
-    font-weight: 700;
-    cursor: pointer;
-    user-select: none;
-    border-bottom: 1px solid var(--border-color);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-#teacherList {
-    padding: 16px;
-    display: grid;
-    grid-template-columns: 1fr;
-    gap: 12px;
-}
-
-@media (min-width: 640px) {
-    #teacherList {
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        gap: 16px;
-        padding: 20px;
-    }
-}
-
-/* Card giáo viên */
-.teacher-card {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    background: rgba(15, 23, 42, 0.4);
-    border: 1px solid var(--border-color);
-    border-left: 5px solid var(--primary);
-    border-radius: 14px;
-    padding: 14px;
-    transition: all 0.2s ease;
-    gap: 12px;
-}
-
-.teacher-card:hover {
-    border-color: var(--primary);
-    background: rgba(15, 23, 42, 0.6);
-}
-
-.teacher-info-wrapper {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: 0; /* Quan trọng: giúp chống tràn flex */
-    flex: 1;
-}
-
-.avatar {
-    width: 44px;
-    height: 44px;
-    border-radius: 50%;
-    color: white;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 18px;
-    font-weight: 700;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    flex-shrink: 0; /* Không cho thu nhỏ avatar */
-}
-
-.teacher-details {
-    min-width: 0; /* Chống tràn chữ */
-    flex: 1;
-}
-
-.teacher-name {
-    font-size: 15px;
-    font-weight: 700;
-    color: var(--text-main);
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.teacher-phone {
-    font-size: 13px;
-    color: var(--text-muted);
-    margin-top: 3px;
-    display: flex;
-    align-items: center;
-    gap: 5px;
-}
-
-/* Nút Gọi */
-.call-btn {
-    background: linear-gradient(135deg, var(--success), var(--success-hover));
-    color: white;
-    border: none;
-    padding: 10px 16px;
-    border-radius: 10px;
-    cursor: pointer;
-    font-weight: 700;
-    font-size: 14px;
-    transition: all 0.2s ease;
-    box-shadow: 0 4px 10px rgba(16, 185, 129, 0.2);
-    flex-shrink: 0; /* Giữ nguyên kích thước nút Gọi, không bị móp méo */
-}
-
-.call-btn:active {
-    transform: scale(0.95);
-}
-</style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh bạ Nhân sự</title>
+    <style>
+        :root { 
+            --bg-main: #0f172a; --bg-card: #1e293b; --border-color: #334155; 
+            --text-main: #f8fafc; --text-muted: #94a3b8; --primary: #3b82f6; --success: #10b981; 
+        }
+        body { font-family: 'Segoe UI', Tahoma, sans-serif; background: var(--bg-main); color: var(--text-main); margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: 0 auto; }
+        h1 { text-align: center; color: #fff; margin-bottom: 30px; }
+        details { background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 16px; margin-bottom: 16px; overflow: hidden; }
+        summary { padding: 18px; font-weight: 700; cursor: pointer; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+        .list-grid { padding: 16px; display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+        .card { display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.4); border: 1px solid var(--border-color); border-left: 4px solid var(--primary); border-radius: 10px; padding: 12px; }
+        .avatar { width: 40px; height: 40px; border-radius: 50%; display: flex; justify-content: center; align-items: center; font-weight: 700; background: var(--primary); flex-shrink: 0; }
+        .info { overflow: hidden; margin-left: 12px; }
+        .name { font-weight: 600; font-size: 14px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .phone { font-size: 12px; color: var(--text-muted); margin-top: 2px; }
+        .call-btn { background: var(--success); color: white; border: none; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 12px; }
+    </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>📱 DANH BẠ GIÁO VIÊN</h1>
-
-    <div class="control-panel">
-        <div class="control-actions">
-            <div class="upload-btn-wrapper">
-                <button class="btn-upload">📁 Tải lên Excel</button>
-                <input type="file" id="excelFile" accept=".xlsx,.xls">
-            </div>
-            
-            <button class="btn-danger" onclick="clearData()">
-                🗑️ Xóa dữ liệu
-            </button>
-        </div>
-
-        <input type="text" id="searchBox" class="search-box" placeholder="🔍 Tìm tên hoặc SĐT..." oninput="filterTeachers()">
-    </div>
-
-    <details open>
-        <summary>
-            👨‍🏫 Danh bạ Giáo viên (<span id="teacherCount">0</span>)
-        </summary>
-        <div id="teacherList"></div>
-    </details>
+<div class="container" id="mainContainer">
+    <h1>📱 DANH BẠ NHÂN SỰ</h1>
 </div>
 
 <script>
-let localTeacherData = []; // Biến lưu tạm dữ liệu để tìm kiếm nhanh
-
-document.getElementById("excelFile").addEventListener("change", loadExcel);
-
-function loadExcel(e){
-    const file = e.target.files[0];
-    if(!file) return;
-
-    const reader = new FileReader();
-    reader.onload = function(evt){
-        const data = new Uint8Array(evt.target.result);
-        const workbook = XLSX.read(data, {type: "array"});
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet, {
-            header: 1,
-            defval: ""
-        });
-        
-        // Lưu vào LocalStorage
-        localStorage.setItem("teacherData", JSON.stringify(rows));
-        localTeacherData = rows;
-        renderTeachers(rows);
-    };
-    reader.readAsArrayBuffer(file);
-}
-
-// Tạo màu ngẫu nhiên hài hòa cho Avatar theo chữ cái đầu
-function getAvatarColor(char) {
-    const colors = [
-        '#3b82f6', '#10b981', '#8b5cf6', '#f59e0b', 
-        '#ef4444', '#ec4899', '#14b8a6', '#06b6d4'
+    // 1. ĐỊNH NGHĨA CÁC MỤC Ở ĐÂY
+    const categories = [
+        { title: "Giáo viên", role: "GV" },
+        { title: "Trợ giảng", role: "TG" },
+        { title: "Nhân viên quét dọn", role: "NVQD" },
+        { title: "Bác sĩ", role: "BS" }
     ];
-    const index = char.charCodeAt(0) % colors.length;
-    return colors[index];
-}
 
-function formatPhone(phone){
-    phone = String(phone).trim();
-    if(phone.length == 10){
-        return phone.replace(/(\d{4})(\d{3})(\d{3})/, "$1.$2.$3");
-    }
-    
-    return phone;
-}
+    // 2. NHẬP DỮ LIỆU TẠI ĐÂY (Chỉ cần thêm đúng role là sẽ tự vào mục)
+    const staffData = [
+        // Giáo viên
+        { name: 'Mai Khánh Ly', phone: '0375874325', role: 'GV' },
+        { name: 'Nguyễn Hà An', phone: '0975710497', role: 'GV' },
+        { name: 'Phạm Thị Thanh Tân', phone: '0389919237', role: 'GV' },
+        { name: 'Nguyễn Thị Phương', phone: '0363565410', role: 'GV' },
+        { name: 'Lê Hồng Nhung', phone: '0367701993', role: 'GV' },
+        { name: 'Đỗ Trà My', phone: '0328468602', role: 'GV' },
+        { name: 'Nguyễn Thanh Thảo', phone: '0388357632', role: 'GV' },
+        { name: 'Nguyễn Thu Hà B', phone: '0359788582', role: 'GV' },
+        { name: 'Nguyễn Thu Phương', phone: '0964382095', role: 'GV' },
+        { name: 'Ngô Thị Thu Hằng', phone: '0968125259', role: 'GV' },
+        { name: 'Lê Minh Phương', phone: '0332323361', role: 'GV' },
+        { name: 'Nguyễn Như Mai', phone: '0395729123', role: 'GV' },
+        { name: 'Hoàng Yến', phone: '0888281294', role: 'GV' },
 
-function renderTeachers(rows){
-    const container = document.getElementById("teacherList");
-    container.innerHTML = "";
-    
-    if(!rows || rows.length <= 1) {
-        container.innerHTML = `<div style="text-align: center; color: var(--text-muted); padding: 40px 0; font-size: 14px;">Chưa có dữ liệu giáo viên. Hãy tải lên file Excel để bắt đầu!</div>`;
-        document.getElementById("teacherCount").innerText = 0;
-        return;
-    }
-
-    let count = 0;
-    // Bỏ dòng tiêu đề (hàng số 0)
-    rows.slice(1).forEach(row => {
-        const name = row[1];
-        let phone = row[3];
-
-        if(!name) return;
-        count++;
-
-        phone = String(phone).replace(/\.0$/, '').trim();
-        // Sửa lỗi mất số 0 ở đầu
-        if(phone.length == 9){
-            phone = "0" + phone;
-        }
+        // Trợ giảng (Ví dụ)
+        { name: 'Nguyễn Văn A', phone: '0912345678', role: 'TG' },
         
-        const phoneDisplay = formatPhone(phone);
-        const firstLetter = name.trim()[0].toUpperCase();
-        const avatarBg = getAvatarColor(firstLetter);
-
-        const card = document.createElement("div");
-        card.className = "teacher-card";
-        card.innerHTML = `
-            <div class="teacher-info-wrapper">
-                <div class="avatar" style="background: ${avatarBg};">
-                    ${firstLetter}
-                </div>
-                <div class="teacher-details">
-                    <div class="teacher-name" title="${name}">${name}</div>
-                    <div class="teacher-phone">
-                        <span>📞</span> ${phoneDisplay}
-                    </div>
-                </div>
-            </div>
-            <button class="call-btn" onclick="window.location.href='tel:${phone}'">
-                Gọi
-            </button>
-        `;
-        container.appendChild(card);
-    });
-
-    document.getElementById("teacherCount").innerText = count;
-}
-
-// Tìm kiếm trực tiếp không cần load lại trang
-function filterTeachers() {
-    const keyword = document.getElementById("searchBox").value.toLowerCase().trim();
-    if (!localTeacherData || localTeacherData.length <= 1) return;
-
-    const filteredRows = [localTeacherData[0]]; // Giữ lại tiêu đề cột
-    
-    for (let i = 1; i < localTeacherData.length; i++) {
-        const row = localTeacherData[i];
-        const name = String(row[1] || "").toLowerCase();
-        const phone = String(row[3] || "");
+        // Nhân viên quét dọn (Ví dụ)
+        { name: 'Bà Nguyễn Thị M', phone: '0987654321', role: 'NVQD' },
         
-        if (name.includes(keyword) || phone.includes(keyword)) {
-            filteredRows.push(row);
-        }
-    }
-    renderTeachers(filteredRows);
-}
+        // Bác sĩ (Ví dụ)
+        { name: 'Bác sĩ Trần Văn Z', phone: '0909090909', role: 'BS' }
+    ];
 
-function clearData(){
-    if(confirm("Bạn có chắc chắn muốn xóa toàn bộ danh bạ giáo viên đã lưu?")) {
-        localStorage.removeItem("teacherData");
-        localTeacherData = [];
-        document.getElementById("searchBox").value = "";
-        renderTeachers([]);
+    function render() {
+        const container = document.getElementById("mainContainer");
+        categories.forEach(cat => {
+            const members = staffData.filter(s => s.role === cat.role);
+            
+            // Chỉ tạo mục nếu có người (hoặc luôn tạo thì bỏ điều kiện if)
+            const section = document.createElement("details");
+            section.open = true;
+            section.innerHTML = `
+                <summary>${cat.title} 
+                    <span style="background: #334155; padding: 2px 8px; border-radius: 12px; font-size: 12px;">${members.length}</span>
+                </summary>
+                <div class="list-grid">
+                    ${members.length > 0 ? members.map(m => `
+                        <div class="card">
+                            <div style="display:flex; align-items:center; overflow:hidden;">
+                                <div class="avatar">${m.name.charAt(0)}</div>
+                                <div class="info">
+                                    <div class="name">${m.name}</div>
+                                    <div class="phone">📞 ${m.phone}</div>
+                                </div>
+                            </div>
+                            <button class="call-btn" onclick="window.location.href='tel:${m.phone}'">Gọi</button>
+                        </div>
+                    `).join('') : '<div style="padding:10px; color:var(--text-muted);">Chưa có dữ liệu</div>'}
+                </div>
+            `;
+            container.appendChild(section);
+        });
     }
-}
 
-window.onload = function(){
-    const data = localStorage.getItem("teacherData");
-    if(data){
-        try {
-            localTeacherData = JSON.parse(data);
-            renderTeachers(localTeacherData);
-        } catch(e) {
-            console.error("Lỗi parse dữ liệu cũ", e);
-        }
-    } else {
-        renderTeachers([]);
-    }
-};
+    window.onload = render;
 </script>
 
 </body>
